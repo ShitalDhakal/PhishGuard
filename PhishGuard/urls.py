@@ -16,7 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from accounts import services as accountService
+from frontend import views 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('getAllRoles/', accountService.getAllRoles),
+    path('login/', views.login)
 ]
