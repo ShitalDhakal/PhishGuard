@@ -1,1 +1,6 @@
-__pycache__/, .env, *.pyc, email_sender.py
+__pycache__/
+*.pyc
+.env
+email_sender.py
+.idea/
+db.sqlite3

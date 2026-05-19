@@ -1,103 +1,216 @@
+#STEP 1: Django Setup
+import os
+import sys
+import django
+
+# Add the project root to Python's path so it can find your apps
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "PhishGuard.settings")
+django.setup()
+
+
+# Step 2 : Imports
 import imaplib
 import email
-from collections import defaultdict
-import os
-
+import hashlib
 from dotenv import load_dotenv
+from Mailbox.models import EmailRecord, EmailAttachment
 
 
-def fetch_email():
+
+def fetch_emails():
+    """
+    This function connects to an IMAP server, fetches all unseen emails,
+    parse them and saves each headers body on the database.
+    """
     load_dotenv()
     username = os.getenv("IMAP_EMAIL")
     password = os.getenv("IMAP_PASSWORD")
+    imap_host = os.getenv("IMAP_HOST")  # We can dynamically change the IMAP host (Outlook, Gmail, Zoho) from the env file.
+    # If IMAP_HOST is missing from .env → uses "imap.gmail.com" silently. No error.
 
     if not username or not password:
         print("Error: Missing IMAP credentials in .env files .")
         return  []  # return [] returns an empty list ; a list with zero elements.
-    imap = imaplib.IMAP4_SSL("imap.gmail.com")  #creates an SSL-encrypted TCP connection to Gmail's IMAP server on port 993.
+
+    # ===== This first establish connection to google imap server and process login ========
+    imap = imaplib.IMAP4_SSL(imap_host)  #creates an SSL-encrypted TCP connection to Gmail's IMAP server on port 993.
     imap.login(username,password)    # Server will respond with a status tagged result, like 'OK' if the login was successful, or 'NO' if it failed.
-    imap.select("INBOX", readonly=True)
+    # imap.select("INBOX", readonly=True)
 
+    # Checking which folder to scan, for now it scan INBOX and SPAM folders
+    folders = ["INBOX","[Gmail]/Spam"]
 
-    # FIND MOST RECENT UNSEEN
-    # status is 'OK' on success, else 'NO' or 'BAD'.
-    # msg_ids is a list like [b'1 2 5 10'] if messages found, or [b''] if none.
-    status, msg_ids = imap.search(None, "UNSEEN")
-    if status != "OK" or not msg_ids[0]:
-        print("No unread messages.")
-        imap.logout()
-        exit()
+    for folder in folders:
+        print(f"\n{'=' * 60}")
+        print(f"Scanning: {folder}")
+        print(f"{'=' * 60}")
 
-    latest_id = max(msg_ids[0].split(), key=int)
+        status, _ = imap.select(f'"{folder}"', readonly=True)  # readonly=True : Open the mailbox in read-only model,
+        # If we parse email, the parsed email isn't marked as seen
+        if status != "OK":
+            print(f"Could not select folder: {folder}")
+            continue
 
-    # imap.fetch(latest_id, "(RFC822)") => Download the full raw email from the server.
-    # "(RFC822)"data item — fetch the entire raw email (headers + body)
-    # _status "OK" or "NO" — ignored here with _
-    _, msg_data = imap.fetch(latest_id, "(RFC822)")
-    '''
-    What RFC822 means?
-    --> RFC822 is an email format standard. Requesting "(RFC822)" tells the server to send the 
-    complete message exactly as stored — headers and body together, unparsed. It's the most complete fetch option.
-    '''
-    message = email.message_from_bytes(msg_data[0][1])   #  parses the raw email bytes into a structured Python object.
+        # Next, Step 3: search for UNSEEN emails
+        status, msg_ids = imap.search(None, "ALL")
+        if status != "OK" or not msg_ids[0]:
+            print(f"No emails found in {folder}.")
+            continue
 
-    #  PRINT ALL HEADERS
-    print("=" * 60)
-    print("ALL HEADERS (most recent unread)")
-    print("=" * 60)
-    for key, value in message.items():
-        print(f"{key}: {value}")
+        # msg_ids looks like: msg_ids = [b'3 7 12 19']   # one bytes object inside a list
+        email_ids = msg_ids[0].split()  # msg_ids[0].split()  # → [b'3', b'7', b'12', b'19']   split on spaces
+        print(f"Found {len(email_ids)} emails(s) in {folder}.")
 
-    # PRINT BODY
-    print("=" * 60)
-    print("BODY")
-    print("=" * 60)
-
-    '''
-    The core question: is the email one piece or many?
-    Simple email          →  just one body (like a plain letter)
-    Multipart email       →  multiple parts (text + HTML + attachments)
-    Your sample email was multipart/mixed — meaning it had multiple parts bundled together.
-    '''
-
-    # Checks if the email has multiple parts. Your sample email had Content-Type: multipart/mixed so this returns True.
-    # If it was a simple plain text email, it returns False.
-    if message.is_multipart():
-        for part in message.walk():
+        # Next, step 4: loop through each email
+        for email_id in email_ids:
+            # Fetch raw byte from each email
+            _, msg_data = imap.fetch(email_id, "(RFC822)")
             '''
-            walk() iterates through every part of the email one by one, like opening folders inside folders:
-            multipart/mixed        ← iteration 1
-            ├── text/plain     ← iteration 2
-            ├── text/html      ← iteration 3
-            └── application/pdf← iteration 4
+            What RFC822 means?
+            --> RFC822 is an email format standard. Requesting "(RFC822)" tells the server to send the 
+            complete message exactly as stored — headers and body together, unparsed. It's the most complete fetch option.
             '''
-            if part.get_content_type() == "text/plain":
-                print("[TEXT]")
-               #At each iteration, checks what type the current part is. Skips text/html, application/pdf etc.
-               #Only proceeds when it finds text/plain.
-                print(part.get_payload(decode=True).decode())
-               # get_payload(decode=True)extracts the content, decodes base64/quoted-printable → gives bytes
-               # .decode()converts bytes → readable string
+            raw_bytes = msg_data[0][1] # Return complete raw email
 
-            elif part.get_content_type() == "text/html":
-                print("[HTML]")
-                print(part.get_payload(decode=True).decode())
+            # Parse into a structured Python object
+            message =  email.message_from_bytes(raw_bytes)
 
-            elif part.get_content_type() == "application/pdf":
-                print("Pdf attachment detected!")
+            # This is checked after the below loop finished: STEP 8: UID Deduplication
+            # Use Message-ID as the unique identifier
+            message_id = message.get("Message-ID", "")
+            uid_value = f"{folder}:{email_id.decode()}"
+            if EmailRecord.objects.filter(uid=uid_value).exists():
+                print(f"  Skipping {uid_value} — already in database.")
+                continue
+
+            # Extract Headers
+            sender = message.get("From")
+            recipient = message.get("To")
+            cc = message.get("Cc")
+            bcc = message.get("Bcc")
+            subject = message.get("Subject")
+            date = message.get("Date")
+            reply_to = message.get("Reply-To")
+            return_path = message.get("Return-Path")
+            x_mailer = message.get("X-Mailer")
 
 
+            # Authentication Headers
+            received_spf = message.get("Received-SPF")
+            dkim_signature = message.get("Dkim-Signature")
 
-    else:
-        print(message.get_payload(decode=True).decode())
-        #This runs when is_multipart() is False — meaning the email has a single body only.
-        #No need to walk, just grab the payload directly.
+            # DMARC live inside authentication headers
+            auth_results = message.get("Authentication-Results","")
+            dmarc = auth_results if "dmarc" in auth_results.lower() else None
 
+            received_chain = message.get_all("Received")
+
+            # Body extraction part
+            body_text = None
+            body_html = None
+            attachment_list = []  # Collects attachments here temporarily
+
+            if message.is_multipart():
+                for part in message.walk():
+                    content_type = part.get_content_type()
+                    disposition = part.get_content_disposition()
+
+                    # STEP 6: Detect Attachments
+                    if disposition == "attachment" or part.get_filename():
+                        payload = part.get_payload(decode =True)   # Python’s email module used to extract the actual content/data of an email part.
+                        if payload:
+                            attachment_list.append({
+                                "filename": part.get_filename(),
+                                "content_type": content_type,
+                                "size": len(payload),
+                                "file_hash": hashlib.sha256(payload).hexdigest(),
+                                "content": payload,
+                            })
+                        continue
+
+                    # Extract text bodies
+                    if content_type == "text/plain" and body_text is None:
+                        payload = part.get_payload(decode=True)
+                        if payload:
+                            body_text = payload.decode(errors="replace")
+                    elif content_type == "text/html" and body_html is None:
+                        payload = part.get_payload(decode=True)
+                        if payload:
+                            body_html = payload.decode(errors="replace")
+
+            else:
+                # For Single-part email,just grab the payload directly
+                payload = message.get_payload(decode=True)
+                if payload:
+                    if message.get_content_type() == "text/html":
+                        body_html = payload.decode(errors="replace")
+                    else:
+                        body_text = payload.decode(errors="replace")
+
+            # Moving to step 9: Save parshed email content's into the database
+            record = EmailRecord.objects.create(
+                uid=uid_value,
+                message_id=message_id,
+                source_folder=folder,
+                # Headers
+                sender=sender,
+                recipient=recipient,
+                cc=cc,
+                bcc=bcc,
+                subject=subject,
+                date=date,
+                reply_to=reply_to,
+                return_path=return_path,
+                x_mailer=x_mailer,
+                # Authentication
+                received_spf=received_spf,
+                dkim_signature=dkim_signature,
+                dmarc=dmarc,
+                received_chain=received_chain,
+                # Body
+                body_text=body_text,
+                body_html=body_html,
+                # Raw data
+                raw_email=raw_bytes,
+                # Metadata flags
+                is_multipart=message.is_multipart(),
+                has_attachments=len(attachment_list) > 0,
+            )
+
+            #  Save Attachments
+            for att in attachment_list:
+                EmailAttachment.objects.create(
+                    email=record,
+                    filename=att["filename"],
+                    content_type=att["content_type"],
+                    size=att["size"],
+                    file_hash=att["file_hash"],
+                    content=att["content"],
+                )
+
+            print(f" Saved: [{uid_value}] {subject}")
+            if attachment_list:
+                print(f"📎 {len(attachment_list)} attachment(s)")
+
+        # Now get relief, we just completed the worst part, now log out
     imap.logout()
+    print(f"\n{'=' * 60}")
+    print("Fetch complete.")
+    print(f"{'=' * 60}")
+
+# Run the fetcher
+if __name__ == "__main__":
+    fetch_emails()
 
 
 
 
 
-fetch_email()
+
+
+
+
+
+
 
