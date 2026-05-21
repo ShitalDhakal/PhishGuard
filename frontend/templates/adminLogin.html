@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        <input type="text" id="adminUsername" placeholder="Enter username" />
+        <input type="password" id="adminPwd" placeholder="Enter password" />
+        {% csrf_token %}
+        <button onclick="submitAdmin()">Submit</button>
+    </div>
+</body>
+</html>
+<script>
+    async function submitAdmin(){
+        let username = $("#adminUsername").val();
+        let password = $("#adminPwd").val();
+
+        let parm = {
+            username: username,
+            password: password,
+            role: 'admin'
+        }
+
+        let request = await AjaxCall("/userLogin/", parm);
+        if(request == 200){
+            alert("success");
+            window.location.href='/adminPage'
+        }
+        else{
+            alert("Failure");
+        }
+    }
+</script>
+{% load static %} <script src="{% static 'jquery.js' %}"></script>
+{% load static %} <script src="{% static 'custom.js' %}"></script>

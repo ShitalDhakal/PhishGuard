@@ -20,7 +20,12 @@ from accounts import services as accountService
 from frontend import views 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('getAllRoles/', accountService.getAllRoles),
-    path('login/', views.login)
+    path('', views.login),
+    path('adminSignup/', views.adminSignup),
+    path('userRegister/', accountService.userRegister),
+    path('userLogin/', accountService.userLogin),
+    path('adminLogin/', views.adminLogin),
+    path('adminPage/', views.adminPage),
+    path('checkAdminCount/', accountService.adminCountCheck),
+    path('getLoginData/', accountService.get_logged_in_data)
 ]
