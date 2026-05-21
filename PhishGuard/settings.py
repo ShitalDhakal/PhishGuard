@@ -81,9 +81,9 @@ WSGI_APPLICATION = 'PhishGuard.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'phishguard',
-        'USER': 'debian',
-        'PASSWORD': 'test',
+        'NAME': 'phishguard_db',
+        'USER': 'postgres',
+        'PASSWORD': 'password',
         'HOST': 'localhost',
         'PORT': '5432',
     }
