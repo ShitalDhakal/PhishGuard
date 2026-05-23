@@ -23,7 +23,7 @@
         let adminCount = parseInt(await AjaxCallWithoutParm("/checkAdminCount")) || 0;
         if(adminCount > 0){
             alert("Already admin exists");
-            window.location.href = "/login";
+            window.location.href = "/";
         }
     });
     async function submitAdmin(){
@@ -42,6 +42,10 @@
         if(request == 200){
             alert("success");
             window.location.href="/"
+        }
+        else if(request == 405){
+            alert("Admin already exists, you think you are smart huh!?")
+            window.location.href="/";
         }
         else{
             alert("Failure");
