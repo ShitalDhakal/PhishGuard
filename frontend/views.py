@@ -12,3 +12,9 @@ def adminLogin(request):
 
 def adminPage(request):
     return render(request, 'adminPage.html')
+
+def analystPage(request):
+    return render(request, 'analystPage.html')
+
+def setupImap(request):
+    return render(request, 'setupImap.html')

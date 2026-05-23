@@ -3,23 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login/Signup Page</title>
+    <title>Document</title>
 </head>
 <body>
-   <a href="/analystLogin">Analyst Login</a>
-   <a href="/userLogin">User Login</a>
-   <a href="/adminLogin">Admin Login</a>
+    <div>
+        <input type="text" id="adminUsername" placeholder="Enter username" />
+        <input type="password" id="adminPwd" placeholder="Enter password" />
+        <select id="roleSelection">
+            <option value="employee">Employee</option>
+            <option value="analyst">Analyst</option>
+            <option value="admin">Admin</option>
+        </select>
+        {% csrf_token %}
+        <button onclick="submitAdmin()">Submit</button>
+    </div>
 </body>
 </html>
 {% load static %} <script src="{% static 'jquery.js' %}"></script>
 {% load static %} <script src="{% static 'custom.js' %}"></script>
-
 <script>
-    $(document).ready(async function(){
-    let adminCount = parseInt(await AjaxCallWithoutParm("/checkAdminCount")) || 0;
-    if(adminCount <= 0){
-        alert("No admins");
-        window.location.href = "/adminSignup";
+    $(document).ready(async function (){
+        let adminCount = parseInt(await AjaxCallWithoutParm("/checkAdminCount")) || 0;
+        if(adminCount <= 0){
+            alert("No admin currently exists");
+            window.location.href = "/adminSignup";
+        }
+    });
+    async function submitAdmin(){
+        let username = $("#adminUsername").val();
+        let password = $("#adminPwd").val();
+        let role = $("#roleSelection").val().toLowerCase();
+
+        let parm = {
+            username: username,
+            password: password,
+            role: role
+        }
+
+        let request = await AjaxCall("/userLogin/", parm);
+        if(request == 200){
+            alert("success");
+            if(role == "employee"){
+                window.location.href="/employeePage";
+            }
+            else if(role == "admin"){
+                window.location.href = "/adminPage";
+            }
+            else{
+                window.location.href = "/analystPage";
+            }
+        }
+        else{
+            alert("Failure");
+        }
     }
-});
 </script>

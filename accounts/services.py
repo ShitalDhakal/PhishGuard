@@ -9,6 +9,7 @@ import json
 
 def adminCountCheck(request):
     adminCount = modelUser.objects.filter(role='admin').count()
+    request.session['adminCount'] = adminCount
     return HttpResponse(adminCount)
 
 
@@ -18,6 +19,14 @@ def userRegister(request):
         try:
             data = json.loads(request.body)
             newUser = modelUser(username=data['username'], email=data['email'], password=make_password(data['password']), created_date=timezone.now(), role=data['role'])
+            if(data['role'] == 'admin'):
+                adminCount = adminCountCheck(request)
+                if(request.session.get('adminCount') > 0):
+                    return HttpResponse(405)
+                
+            if(request.session.get('login_user_role') != 'admin'):
+                return HttpResponse("Only admin can create users!", 405)
+
             newUser.save()
             return HttpResponse(200)
         except Exception as e:

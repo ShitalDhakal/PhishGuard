@@ -1,9 +1,29 @@
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 async function AjaxCall(url , data){
     const parm = JSON.stringify(data);
     try{
         let response = await fetch(url, {
             method: 'POST',
-            body: parm
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken' : getCookie('csrftoken')
+            },
+            body: parm,
+            credentials: 'include'
         });
         let result = await response.json();
         return result;
@@ -14,7 +34,13 @@ async function AjaxCall(url , data){
 }
 async function AjaxCallWithoutParm(url){
     try{
-        let response = await fetch(url);
+        let response = await fetch(url, {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken' : getCookie('csrftoken')
+            },
+            credentials: 'include'
+        });
         let result = await response.json();
         return result;
     }
