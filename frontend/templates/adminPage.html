@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input type="text" id="username" placeholder="Enter username"/>
+    <input type="password" id="password" placeholder="Enter password" />
+    <input type="text" id="email" placeholder="Enter email"/>
+    <select id="userType">
+        <option val="employee">Employee</option>
+        <option val="anlayst">Analyst</option>
+    </select>
+    <button id="addUser">Submit</button>
+</body>
+
+{% load static %} <script src="{% static 'jquery.js' %}"></script>
+{% load static %} <script src="{% static 'custom.js' %}"></script>
+{% load static %} <script src="{% static 'admin.js' %}"></script>
+<script>
+    $(document).on("click", "#addUser", async function(){
+        let username = $("#username").val();
+        let password = $("#password").val();
+        let adminEmail = $("#email").val();
+        let role = $("#userType").val().toLowerCase();
+
+        let parm = {
+            username: username,
+            email: adminEmail,
+            password: password,
+            role: role
+        }
+
+        let request = await AjaxCall("/userRegister/", parm);
+        if(request == 200){
+            alert("success");
+            window.location.href="/"
+        }
+        else{
+            alert("Failure");
+        }
+    });
+</script>
+</html>

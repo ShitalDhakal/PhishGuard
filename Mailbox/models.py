@@ -67,3 +67,13 @@ class EmailAttachment(models.Model):
 
     def __str__(self):
         return f"{self.filename or 'unnamed'} ({self.content_type}) — {self.size or 0} bytes"
+    
+    
+class MailBox(models.Model):
+    def __str__(self):
+        return self.address
+    
+    mail_id = models.AutoField(primary_key=True)
+    address = models.CharField(max_length=250)
+    app_password = models.CharField(max_length=250)
+    imap_server = models.CharField(max_length=250)

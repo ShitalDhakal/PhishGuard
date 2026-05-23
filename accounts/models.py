@@ -1,3 +1,16 @@
 from django.db import models
-
+from django.utils import timezone
 # Create your models here.
+
+
+class User(models.Model):
+    
+    def __str__(self):
+        return self.username
+    
+    user_id = models.AutoField(primary_key=True)
+    username = models.CharField(max_length=250)
+    email = models.CharField(max_length=250)
+    password = models.CharField(max_length=1000)
+    role = models.CharField(max_length=250)
+    created_date = models.DateTimeField(default=timezone.now)

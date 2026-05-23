@@ -16,7 +16,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from accounts import services as accountService
+from frontend import views 
+from Mailbox.services import setup_imap
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('', views.login),
+    path('adminSignup/', views.adminSignup),
+    path('userRegister/', accountService.userRegister),
+    path('userLogin/', accountService.userLogin),
+    path('adminPage/', views.adminPage),
+    path('analystPage/', views.analystPage),
+    path('setupImap/', views.setupImap),
+    path('checkAdminCount/', accountService.adminCountCheck),
+    path('getLoginData/', accountService.get_logged_in_data),
+    path('insertUpdateImap/', setup_imap.insert_imap_server),
+    path('getMailData/', setup_imap.get_mail_data),
+    path('testImapConnection/', setup_imap.test_connection)
 ]
