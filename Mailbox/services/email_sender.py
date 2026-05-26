@@ -6,40 +6,59 @@ from email.mime.text import MIMEText
 
 load_dotenv()
 
-sender   = os.getenv("IMAP_EMAIL")
-password = os.getenv("IMAP_PASSWORD")
-receiver = "yuri.if2061@gmail.com"   # destination account
+SENDER_EMAIL   = os.getenv("IMAP_SENDER_EMAIL")
+SENDER_APP_PASSWORD = os.getenv("IMAP_SENDER_PASSWORD")
+RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL")   # destination account
 
-# BUILD
-msg = MIMEMultipart("alternative")
-msg["From"]    = sender
-msg["To"]      = receiver
-msg["Subject"] = "PhishGuard Demo — HTML Email"
+# --- Phishing-like email content ---
+# Spoofed "From" header: display name + fake email (Gmail may replace with your real address)
+spoofed_from = "PayPal Security <security@paypal.com>"   # this is what the recipient sees
+subject = "Action Required: Your PayPal account has been limited"
+reply_to = "no-reply@paypal.com"   # optional spoofed reply-to
 
-# PART 1 — plain text fallback
-text = "Your account has been suspended. Click here to restore."
-msg.attach(MIMEText(text, "plain"))
+# Plain text fallback
+text_body = """
+Dear user,
 
-# PART 2 — HTML
-html = """
+We noticed unusual activity on your PayPal account.
+Please verify your identity within 24 hours to avoid suspension.
+
+Click here to verify: http://192.168.1.100/phishing-demo (test link)
+"""
+
+# HTML body with a deceptive link
+html_body = """
 <html>
   <body>
-    <h2 style="color:red;">⚠️ Account Suspended</h2>
-    <p>Dear Customer,</p>
-    <p>Your account has been suspended due to suspicious activity.</p>
-    <a href="http://paypa1-secure-login.ru/restore?token=abc123"
-       style="background:blue; color:white; padding:10px;">
-       Restore Account
-    </a>
-    <p>Failure to act within <b>24 hours</b> will result in permanent suspension.</p>
-    <p>— PayPal Security Team</p>
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd;">
+      <img src="https://www.paypalobjects.com/webstatic/icon/pp258.png" alt="PayPal" width="100">
+      <h2 style="color:#c00;">Your account has been limited</h2>
+      <p>Dear Customer,</p>
+      <p>We have detected unusual activity on your PayPal account. To prevent further access, we have temporarily limited your account.</p>
+      <p>Please <a href="http://192.168.1.100/phishing-demo" style="color:#0070ba; font-weight:bold;">click here to restore your account</a>.</p>
+      <p>This must be completed within 24 hours.</p>
+      <p>Sincerely,<br>PayPal Security Team</p>
+    </div>
   </body>
 </html>
 """
-msg.attach(MIMEText(html, "html"))
 
-# SEND
-with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-    smtp.login(sender, password)
-    smtp.sendmail(sender, receiver, msg.as_string())
-    print("Email sent successfully.")
+# --- Build the email ---
+msg = MIMEMultipart("alternative")
+msg["From"] = spoofed_from
+msg["To"] = RECIPIENT_EMAIL
+msg["Subject"] = subject
+msg["Reply-To"] = reply_to
+
+# Attach plain text and HTML parts
+msg.attach(MIMEText(text_body, "plain"))
+msg.attach(MIMEText(html_body, "html"))
+
+# --- Send via Gmail SMTP ---
+try:
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(SENDER_EMAIL, SENDER_APP_PASSWORD)
+        server.sendmail(SENDER_EMAIL, RECIPIENT_EMAIL, msg.as_string())
+    print(f"Demo phishing email sent to {RECIPIENT_EMAIL}")
+except Exception as e:
+    print(f"Failed to send: {e}")
