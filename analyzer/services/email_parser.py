@@ -76,8 +76,8 @@ def extract_urls(body_text, body_html):
         return list(set(urls))  # A set only keeps unique values, duplicates are automatically removed
 
 
-    # Function 3: Parse email date into a datetime object
-    def parse_date(date_string):
+# Function 3: Parse email date into a datetime object
+def parse_date(date_string):
         """
             Converts an RFC 2822 date string like 'Mon, 26 May 2026 10:30:00 +0545'
             into a Python datetime object. Returns None if parsing fails.
@@ -95,3 +95,111 @@ def extract_urls(body_text, body_html):
         except Exception:
             return None
 
+# Function 4: Detect display name vs domain mismatch
+def detect_display_name_mismatch(sender_string):
+   """
+     If we do research on phishing mail, most of the phishing are generated using the name of popular brands.
+     What this function does is to check if the domain of the email address matches the domain of the email address.
+     If the domain of the email address does not match the domain of the email address, it is likely that the email address is commonly impersonated brands.
+     Only a simple layer to of protection in email analysis.
+   """
+   if not sender_string:
+       return False
+
+       # Map of brand names to their legitimate domain(s)
+   BRAND_DOMAINS = {
+       "paypal": ["paypal.com", "paypal.co.uk", "email.paypal.com"],
+       "apple": ["apple.com", "icloud.com"],
+       "microsoft": ["microsoft.com", "outlook.com", "hotmail.com", "live.com"],
+       "google": ["google.com", "gmail.com", "googlemail.com"],
+       "amazon": ["amazon.com", "amazon.co.uk", "amazon.in"],
+       "netflix": ["netflix.com"],
+       "facebook": ["facebook.com", "meta.com", "facebookmail.com"],
+       "instagram": ["instagram.com"],
+       "twitter": ["twitter.com", "x.com"],
+       "linkedin": ["linkedin.com", "e.linkedin.com"],
+       "dropbox": ["dropbox.com"],
+       "stripe": ["stripe.com"],
+       "github": ["github.com", "githubusercontent.com"],
+   }
+
+    # Calling the function we discussed earlier —> breaks "PayPal Security <scammer@evil.com>" into structured parts
+   parsed = parse_email_address(sender_string)
+   display_name = parsed["display_name"].lower()
+   domain = parsed["domain"].lower()
+
+   for brand, legit_domains in BRAND_DOMAINS.items():
+       if brand in display_name:
+           # Brand name found in display name — check if domain is legitimate
+           if domain not in legit_domains:
+               return True  # MISMATCH: display says "PayPal" but domain is not paypal.com
+
+   return False
+
+
+# Function 5: Main parser ; orchestrates all functions above
+
+def parse_email(email_record):
+    """
+    Central parsing pipeline for PhishGuard.
+
+    Takes a raw EmailRecord from the database and extracts all
+    structured data needed by the analyzer services:
+        - Sender identity (display name, email, domain)
+        - All headers as a clean dictionary
+        - Plain text and HTML body
+        - All URLs from both body types
+        - Attachments and pixel tracker signals
+        - Parsed datetime object from the Date header
+
+    Returns a single dictionary consumed by:
+        header_analyzer.py  → sender, authentication headers
+        keyword_detector.py → body_text
+        ioc_extractor.py    → urls
+        ml_classifier.py    → full parsed output
+
+    Does not modify the EmailRecord — read only.
+    """
+
+    # Re-parse the raw bytes into a full message object
+      # email_record.raw_email contains the full raw email stored in the database.
+    # bytes() ensures the data is in byte format.
+    raw_bytes = bytes(email_record.raw_email)
+    message = email.message_from_bytes(raw_bytes)
+
+    # Parse structured fields
+    sender = parse_email_address()  # This accesses the sender field from the EmailRecord Django model object.
+    recipient = parse_email_address(email_record.recipient)
+    reply_to = parse_email_address(email_record.reply_to)
+    parsed_date = parse_date(email_record.date)
+    urls = extract_urls(email_record.body_text, email_record.body_html)
+    mismatch = detect_display_name_mismatch(email_record.sender)
+
+    return {
+        "id": email_record.id,
+        "uid": email_record.uid,
+        "message_id": email_record.message_id,
+        "sender": sender,
+        "recipient": recipient,
+        "reply_to": reply_to,
+        "cc": email_record.cc,
+        "bcc": email_record.bcc,
+        "subject": email_record.subject,
+        "parsed_date": parsed_date,
+        # Authentication headers (header_analyzer needs these)
+        "return_path": email_record.return_path,
+        "x_mailer": email_record.x_mailer,
+        "received_spf": email_record.received_spf,
+        "dkim_signature": email_record.dkim_signature,
+        "dmarc": email_record.dmarc,
+        "received_chain": email_record.received_chain,
+        # Analysis-ready fields
+        "urls": urls,
+        "url_count": len(urls),
+        "display_name_mismatch": mismatch,
+        "has_attachments": email_record.has_attachments,
+        "is_multipart": email_record.is_multipart,
+        "source_folder": email_record.source_folder,
+        "body_text": email_record.body_text,
+        "body_html": email_record.body_html,
+    }
