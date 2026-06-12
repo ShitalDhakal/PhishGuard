@@ -1,20 +1,26 @@
 from django.shortcuts import render
 
+
 # Create your views here.
 def login(request):
-    return render(request, 'login.html')
+    return render(request, "login.html")
+
 
 def adminSignup(request):
-    return render(request, 'adminSignup.html')
+    return render(request, "adminSignup.html")
+
 
 def adminLogin(request):
-    return render(request, 'adminLogin.html')
+    return render(request, "adminLogin.html")
+
 
 def adminPage(request):
-    return render(request, 'adminPage.html')
+    return render(request, "adminPage.html")
+
 
 def analystPage(request):
-    return render(request, 'analystPage.html')
+    return render(request, "/analyst/analystPage.html")
+
 
 def setupImap(request):
-    return render(request, 'setupImap.html')
+    return render(request, "setupImap.html")

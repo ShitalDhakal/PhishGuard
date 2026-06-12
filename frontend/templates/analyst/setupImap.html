@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <div>
+            <input type="text" id="email" placeholder="Enter email" />
+            <input type="text" id="appPwd" placeholder="Enter app password" />
+            <input
+                type="text"
+                id="imapServer"
+                placeholder="Enter IMAP Server"
+            />
+            {% csrf_token %}
+            <button id="submitMailBox" onclick="submitImap()">Submit</button>
+        </div>
+    </body>
+</html>
+<script>
+    async function submitImap() {
+        const parm = {
+            address: email.value,
+            app_password: appPwd.value,
+            imap_server: imapServer.value,
+        };
+        let request = await AjaxCall("/insertUpdateImap/", parm);
+        if (request["status"] == 200) {
+            alert("succeess");
+            window.location.href = "/analystPage";
+        } else {
+            alert("Failure");
+        }
+    }
+</script>
