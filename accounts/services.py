@@ -45,6 +45,7 @@ def userLogin(request):
         try:
             data = json.loads(request.body)
             user = modelUser.objects.get(username=data['username'], role=data['role'])
+            print(user)
             if(check_password(data['password'], user.password)):
                 request.session['login_user_id'] = user.user_id
                 request.session['login_user_role'] = user.role

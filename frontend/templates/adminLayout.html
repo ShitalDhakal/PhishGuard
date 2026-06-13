@@ -1,19 +1,18 @@
 {% load static %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Layout</title>
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Admin Layout</title>
+        <link rel="stylesheet" href="{% static 'library/bootstrap.css' %}" >
+    </head>
+    <body>
 
-    <script src="{% static 'jquery.js' %}"></script>
-    <script src="{% static 'custom.js' %}"></script>
-    <script src="{% static 'admin.js' %}"></script>
-    {% block content %}
-    {% endblock %}
-
-
-</body>
+        <script src="{% static 'library/jquery.js' %}"></script>
+        <script src="{% static 'library/boostrap.js' %}"></script>
+        <script src="{% static 'custom.js' %}"></script>
+        <script src="{% static 'admin.js' %}"></script>
+        {% block content %} {% endblock %}
+    </body>
 </html>
