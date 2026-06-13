@@ -22,8 +22,8 @@ class IOC(models.Model):
         related_name="iocs"
     )
 
-    # TYpes of indicators (e.g url, ip, domain, email)
-    ioc_types = models.CharField(max_length=10)
+    # Type of indicator (e.g. url, ip, domain, email)
+    ioc_type = models.CharField(max_length=10, choices=IOC_TYPES)
 
     # The value of IOC
     value = models.TextField()  # phishing URLs can be extremely long, that's why textfiedl

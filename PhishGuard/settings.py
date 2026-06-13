@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "Mailbox.apps.MailboxConfig",
+    "analyzer.apps.AnalyzerConfig",
 ]
 
 MIDDLEWARE = [
