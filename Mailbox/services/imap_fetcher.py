@@ -217,6 +217,12 @@ def read_mail_from_db(request):
         return JsonResponse({"status":200,"data":data}, safe=False)
 
 
+# Add this at the very bottom of imap_fetcher.py:
+if __name__ == "__main__":
+    fetch_emails(None)
+
+
+
 
 
 

