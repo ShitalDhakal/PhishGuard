@@ -7,8 +7,12 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 import json
 
-def adminCountCheck(request):
+def get_admin_count():
     adminCount = modelUser.objects.filter(role='admin').count()
+    return adminCount
+
+def adminCountCheck(request):
+    adminCount = get_admin_count()
     request.session['adminCount'] = adminCount
     return HttpResponse(adminCount)
 
@@ -20,11 +24,11 @@ def userRegister(request):
             data = json.loads(request.body)
             newUser = modelUser(username=data['username'], email=data['email'], password=make_password(data['password']), created_date=timezone.now(), role=data['role'])
             if(data['role'] == 'admin'):
-                adminCount = adminCountCheck(request)
-                if(request.session.get('adminCount') > 0):
+                adminCount = get_admin_count()
+                if(adminCount > 0):
                     return HttpResponse(405)
                 
-            if(request.session.get('login_user_role') != 'admin'):
+            if(request.session.get('login_user_role') != 'admin' and adminCount > 0):
                 return HttpResponse("Only admin can create users!", 405)
 
             newUser.save()

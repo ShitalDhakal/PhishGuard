@@ -7,20 +7,20 @@ def login(request):
 
 
 def adminSignup(request):
-    return render(request, "adminSignup.html")
+    return render(request, "admin/adminSignup.html")
 
 
 def adminLogin(request):
-    return render(request, "adminLogin.html")
+    return render(request, "admin/adminLogin.html")
 
 
 def adminPage(request):
-    return render(request, "adminPage.html")
+    return render(request, "admin/adminPage.html")
 
 
 def analystPage(request):
-    return render(request, "/analyst/analystPage.html")
+    return render(request, "analyst/analystPage.html")
 
 
 def setupImap(request):
-    return render(request, "setupImap.html")
+    return render(request, "analyst/setupImap.html")

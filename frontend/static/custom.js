@@ -51,6 +51,11 @@ async function AjaxCallWithoutParm(url){
 
 async function UserValidation(role){
     let data = await AjaxCallWithoutParm("/getLoginData");
+
+    if(data['id'] == 0 && role=='admin'){
+        return true;
+    }
+    
     if(data["id"] == 0 || data['role'] != role){
         alert("You are not logged in as proper role!")
         return false;

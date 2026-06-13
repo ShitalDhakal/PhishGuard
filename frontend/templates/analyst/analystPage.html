@@ -1,0 +1,32 @@
+{% extends 'analystLayout.html' %}
+
+{% block content %}
+    <button id="testConnection">Test Connection</button>
+    <a href="/setupImap">Setup Imap</a>
+    <button id="fetchMail">Fetch Mail</button>
+    
+    <table id="mails" style="border: 1px solid black">
+        <thead>
+            <tr>
+                <th>Content</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        $(document).on("click", "#testConnection", async function(){
+            let response = await AjaxCallWithoutParm("/testImapConnection");
+            if(response["status"] == 200){
+                alert("Connection established successfully");
+            }
+            else{
+                alert("Please setup IMAP properly, connection failed");
+            }
+        });
+    </script>
+{% endblock %}
