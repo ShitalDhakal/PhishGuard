@@ -223,10 +223,28 @@ def extract_iocs(parsed_data):
                     "source": "body"
                 })
 
-    """
-    This block removes duplicate IOCs (Indicators of Compromise) so that each unique IOC appears only once.
-    """
+    # 5. Extract File Hashes from email attachments
+    email_id = parsed_data.get("id") # Gets the email's database ID from parsed_data.
+    if email_id:
+        try:
+            email_record = EmailRecord.objects.get(id=email_id)
+            # Loop through all attachments, if contains
+            for attachment in email_record.attachments.all(): # Gets every attachment linked to that email.
+                if attachment.file_hash:
+                    iocs.append({
+                        "type": "hash",
+                        "value": attachment.file_hash,
+                        "source": "attachment"
+                    })
+        except EmailRecord.DoesNotExist:
+            pass
+
+
+
     seen = set()
+    """
+        This block removes duplicate IOCs (Indicators of Compromise) so that each unique IOC appears only once.
+    """
     unique_iocs = []
 
     for ioc in iocs:

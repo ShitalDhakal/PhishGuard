@@ -10,7 +10,8 @@ class IOC(models.Model):
         ('url', 'URL'),
         ('ip', 'IP Address'),
         ('domain', 'Domain'),
-        ('email', 'Email Address')
+        ('email', 'Email Address'),
+        ('hash', 'File Hash'),
     ]
 
     # creates a Foreign Key in the database, establishing that one email can have many IOC
