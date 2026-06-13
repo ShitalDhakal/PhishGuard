@@ -84,3 +84,181 @@ def extract_domains_from_urls(urls):
             continue
 
     return list(domains)
+
+
+def extract_email_addresses(text):
+    """
+    Find all email addresses embedded in the body text using a precise regex pattern.
+    Requires a top-level domain of at least 2 characters.
+    """
+    if not text:
+        # If text is None or an empty string (""), the function returns an empty list.
+        return []
+
+
+    # This pattern matches email addresses
+    pattern = r'\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b'
+
+    # re.findall() searches the text and returns all matching email addresses as a list.
+    # like this ['support@example.com', 'admin@test.org']
+    return re.findall(pattern, text)
+
+def extract_iocs(parsed_data):
+    """
+    Master orchestrator. Receives parsed email dictionary, extracts URLs,
+    domains, IPs (body + received headers), and email addresses.
+    Deduplicates and returns list of unique IOC dictionaries.
+    """
+    iocs = []
+    """
+    Example after extraction:
+    iocs = [
+    {"type": "url", "value": "https://evil.com", "source": "body"},
+    {"type": "ip", "value": "192.168.1.1", "source": "header"}
+    ]
+    """
+    # 1. Extract URLs (already parsed/deduplicated in email_parser.py from function 2
+    # ........Remove duplicates while converting to a list
+    #         return list(set(urls)) )
+    urls = parsed_data.get("urls", [])
+    # If "urls" doesn't exist, it returns an empty list [].
+    for url in urls:
+        # Loop Through Each URL
+
+        # Creates a dictionary describing the IOC and adds it to iocs.
+        iocs.append({
+            "type": "url",
+            "value": url,
+            "source": "body"
+        })
+
+   # 2. Extract Domains (derived from parsed URLs)
+    domains = extract_domains_from_urls(urls)
+    """ Example
+    urls = [
+    "https://evil.com/login",
+    "https://google.com/search"
+    ]
+    returns:
+     domains = [
+    "evil.com",
+    "google.com"
+    ]
+    """
+    for domain in domains:
+        # Store Each Domain as an IOC
+        iocs.append({
+            "type": "domain",
+            "value": domain,
+            "source": "url"
+        })
+
+    # 3. Extract IP Addresses
+
+    body_text = parsed_data.get("body_text")
+    # Gets the email's plain text body.
+    if body_text:
+        body_ips = extract_ips(body_text)
+        for ip in body_ips:
+            iocs.append({
+                "type": "ip",
+                "value": ip,
+                "source": "body"
+            })
+            """
+            {
+                "type": "ip",
+                "value": "192.168.1.10",
+                "source": "body"
+            }
+            """
+    # From received headers chain
+    # Gets the list of Received: email headers.
+    received_chain = parsed_data.get("received_chain")
+    if received_chain:
+        for header_string in received_chain:
+            if header_string:
+                # Extract IPs from Header
+                header_ips = extract_ips(header_string)
+                for ip in header_ips:
+                    iocs.append({
+                        "type": "ip",
+                        "value": ip,
+                        "source": "header"
+                    })
+                """ {
+                    "type": "ip",
+                    "value": "203.0.113.5",
+                    "source": "header"
+                    }
+                """
+    # 4. Extract Email Addresses (excluding the sender's own address)
+    # Combine text and HTML bodies so we don't miss anything in HTML-only emails
+    text_to_search = ""
+    # Get the plain text and HTML bodies
+    body_text = parsed_data.get("body_text") # If body_text exists, append it to text_to_search.
+    body_html = parsed_data.get("body_html")
+
+    if body_text:
+        text_to_search += body_text + " "
+    if body_html:
+        text_to_search += body_html
+    # Only continue if at least one of body_text or body_html contains data.
+    if text_to_search:
+        emails = extract_email_addresses(text_to_search)
+        sender = parsed_data.get("sender")
+        sender_email = ""
+        if isinstance(sender, dict):
+            sender_email = sender.get("email") or ""
+        elif isinstance(sender, str):
+            sender_email = sender
+        # This removes extra spaces and ignores uppercase/lowercase differences.
+        sender_email_lower = sender_email.strip().lower()
+        # Skip the sender's own email, only store email different from sender
+        for email_addr in emails:
+            if email_addr.strip().lower() != sender_email_lower:
+                iocs.append({
+                    "type": "email",
+                    "value": email_addr,
+                    "source": "body"
+                })
+
+    """
+    This block removes duplicate IOCs (Indicators of Compromise) so that each unique IOC appears only once.
+    """
+    seen = set()
+    unique_iocs = []
+
+    for ioc in iocs:
+        key = (ioc["type"], ioc["value"])
+        if key not in seen:
+            seen.add(key)
+            unique_iocs.append(ioc)
+
+    return unique_iocs
+
+
+def save_iocs(email_record, ioc_list):
+    """
+    Saves a list of extracted unique IOCs to the database associated with the email_record.
+    Returns the count of new database entries successfully created.
+    """
+    count = 0
+    for ioc in ioc_list:
+                # Django part: get_or_create() is a Django ORM method that Gets an existing database record if it already exists.
+                # Creates a new record if it does not exist.
+        obj, created = IOC.objects.get_or_create(
+
+            email_record=email_record,
+            ioc_type=ioc["type"],
+            value=ioc["value"],
+            defaults={
+                "source": ioc["source"],
+                "is_malicious": None,
+                "threat_score": None
+            }
+        )
+        if created:
+            count += 1
+
+    return count

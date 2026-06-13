@@ -168,7 +168,7 @@ def parse_email(email_record):
     message = email.message_from_bytes(raw_bytes)
 
     # Parse structured fields
-    sender = parse_email_address()  # This accesses the sender field from the EmailRecord Django model object.
+    sender = parse_email_address(email_record.sender)  # This accesses the sender field from the EmailRecord Django model object.
     recipient = parse_email_address(email_record.recipient)
     reply_to = parse_email_address(email_record.reply_to)
     parsed_date = parse_date(email_record.date)
