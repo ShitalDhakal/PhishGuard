@@ -14,24 +14,30 @@ import imaplib
 import email
 import hashlib
 from dotenv import load_dotenv
-from Mailbox.models import EmailRecord, EmailAttachment
+from Mailbox.models import EmailRecord, EmailAttachment, MailBox as mailbox
+from django.http import JsonResponse
 
 
 
-def fetch_emails():
+def fetch_emails(request):
     """
     This function connects to an IMAP server, fetches all unseen emails,
     parse them and saves each headers body on the database.
     """
     load_dotenv()
-    username = os.getenv("IMAP_EMAIL")
-    password = os.getenv("IMAP_PASSWORD")
-    imap_host = os.getenv("IMAP_HOST")  # We can dynamically change the IMAP host (Outlook, Gmail, Zoho) from the env file.
+
+    # I am assuming only one mail exists 
+    data = list(mailbox.objects.all().values())
+
+    username = data[0]["address"]
+    password = data[0]["app_password"]
+    imap_host = data[0]["imap_server"]  # We can dynamically change the IMAP host (Outlook, Gmail, Zoho) from the env file.
     # If IMAP_HOST is missing from .env → uses "imap.gmail.com" silently. No error.
 
     if not username or not password:
         print("Error: Missing IMAP credentials in .env files .")
-        return  []  # return [] returns an empty list ; a list with zero elements.
+        return JsonResponse({"message":"Invalid credentials, please setup IMAP properly.", "status": 403})
+
 
     # ===== This first establish connection to google imap server and process login ========
     imap = imaplib.IMAP4_SSL(imap_host)  #creates an SSL-encrypted TCP connection to Gmail's IMAP server on port 993.
@@ -198,10 +204,17 @@ def fetch_emails():
     print(f"\n{'=' * 60}")
     print("Fetch complete.")
     print(f"{'=' * 60}")
+    return JsonResponse({"message":"Fetched successfully", "status": 200})
 
-# Run the fetcher
-if __name__ == "__main__":
-    fetch_emails()
+
+def read_mail_from_db(request):
+    role = request.session.get("login_user_role")
+    if(role != "analyst"):
+        return JsonResponse({"message":"Only analyst can perform this action", "status": 403})
+    else:
+        data = list(EmailRecord.objects.all().values("uid", "sender", "recipient", "subject", "date", "body_text"))
+        print(data)
+        return JsonResponse({"status":200,"data":data}, safe=False)
 
 
 

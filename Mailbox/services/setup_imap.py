@@ -39,6 +39,7 @@ def test_connection(request):
         mail.logout()
         return JsonResponse({'message': 'Connection established', 'status':200})
     
-    except:
+    except Exception as e:
+        print(f"Error: {e}")
         return JsonResponse({'message': 'failure', 'status': 500})
     

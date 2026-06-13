@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from accounts import services as accountService
 from frontend import views 
-from Mailbox.services import setup_imap
+from Mailbox.services import setup_imap, imap_fetcher
 
 urlpatterns = [
     path('', views.login),
@@ -32,5 +32,7 @@ urlpatterns = [
     path('getLoginData/', accountService.get_logged_in_data),
     path('insertUpdateImap/', setup_imap.insert_imap_server),
     path('getMailData/', setup_imap.get_mail_data),
-    path('testImapConnection/', setup_imap.test_connection)
+    path('testImapConnection/', setup_imap.test_connection),
+    path('fetch_emails/', imap_fetcher.fetch_emails),
+    path('read_mail_from_db/', imap_fetcher.read_mail_from_db)
 ]
