@@ -43,6 +43,8 @@ class IOC(models.Model):
     # Timestamp when this was recorded
     detected_at = models.DateTimeField(auto_now_add=True)
 
+    file_hash = models.CharField(null=True, blank=True)
+
     class Meta:
 
         # sets the default query sorting order for this model.

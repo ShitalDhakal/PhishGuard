@@ -12,9 +12,9 @@ RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL")   # destination account
 
 # --- Phishing-like email content ---
 # Spoofed "From" header: display name + fake email (Gmail may replace with your real address)
-spoofed_from = "PayPal Security <security@paypal.com>"   # this is what the recipient sees
-subject = "Action Required: Your PayPal account has been limited"
-reply_to = "no-reply@paypal.com"   # optional spoofed reply-to
+spoofed_from = "Google Security <security@google.com>"   # this is what the recipient sees
+subject = "Action Required: Your Google account has been limited"
+reply_to = "no-reply@google.com"   # optional spoofed reply-to
 
 # Plain text fallback
 text_body = """
