@@ -4,9 +4,7 @@ from django.utils import timezone
 
 
 class User(models.Model):
-    
-    def __str__(self):
-        return self.username
+
     
     user_id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=250)
@@ -14,3 +12,9 @@ class User(models.Model):
     password = models.CharField(max_length=1000)
     role = models.CharField(max_length=250)
     created_date = models.DateTimeField(default=timezone.now)
+    is_banned =  models.BooleanField(default=False)
+
+
+    
+    def __str__(self):
+        return self.username

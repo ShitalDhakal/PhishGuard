@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+        <input type="text" id="oldUsername" class="form-control form-control-sm" placeholder="Enter old username" />
+        <input type="password" id="oldpassword" class="form-control form-control-sm" placeholder="Enter old password" />
+        <input type="text" id="oldEmail" class="form-control form-control-sm" placeholder="Enter old email" />
+        <input type="password" id="newUsername" class="form-control form-control-sm" placeholder="Enter new username" />
+        <input type="password" id="newpassword" class="form-control form-control-sm" placeholder="Enter new password" />
+        <input type="text" id="newemail" class="form-control form-control-sm" placeholder="Enter new email" />
+        <select id="roleSelection">
+            <option value="employee">Employee</option>
+            <option value="analyst">Analyst</option>
+            <option value="admin">Admin</option>
+        </select>
+        {% csrf_token %}
+        <button onclick="submitInfo()">Update</button>
+</body>
+</html>
+
+{% load static %} <script src="{% static 'library/jquery.js' %}"></script>
+{% load static %} <script src="{% static 'custom.js' %}"></script>
+
+
+<script>
+    async function submitInfo(){
+
+        const parm = {
+            oldUsername : $("#oldUsername").val().trim(),
+            oldEmail : $("#oldEmail").val().trim(),
+            newUsername : $("#newUsername").val().trim(),
+            oldPwd : $("#oldpassword").val().trim(),
+            newPwd : $("#newpassword").val().trim(),
+            role : $("#roleSelection").val().trim(),
+            newEmail : $("#newemail").val().trim()
+        }
+
+        const response = await AjaxCall("/change_user_cred/", parm);
+        if(response.status == 200){
+            alert("Credentails changed successfully!");
+            window.location.href = "/";
+        }
+        else{
+            alert(response.message);
+        }
+    }
+</script>

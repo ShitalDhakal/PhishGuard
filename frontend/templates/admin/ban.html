@@ -1,0 +1,70 @@
+{% extends 'adminLayout.html' %}
+{% block content %}
+
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-responsive table-bordered table-sm" id="userListTbl">
+            <thead>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Ban Status</th>
+            </thead>
+            <tbody>
+                
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-12 text-end">
+        <button class="btn btn-sm btn-primary" id="applyBan">Apply</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(async function(){
+        $("#banUsers").hide();
+        await getAllUsers();
+    });
+
+    async function getAllUsers(){
+        const response = await AjaxCallWithoutParm("/get_all_users");
+        let tableHtml = ``;
+        if(response.status == 200){
+            response.data.forEach(item => {
+                tableHtml += `
+                    <tr data-id="${item.user_id}">
+                        <td>${item.username}</td>
+                        <td>${item.email}</td>
+                        <td>${item.role}</td>
+                        <td><input type="checkbox" class="form-checkbox form-checkbox-sm banStatus" ${item.is_banned ? "checked" : ""} /></td>
+                    </tr>
+                `;
+            });
+
+            $("#userListTbl > tbody").empty().append(tableHtml);
+        }
+        else{
+            alert(response.message);
+        }
+
+    }
+
+    $("#applyBan").on("click", async function(){
+        let parm = [];
+
+        $("#userListTbl > tbody > tr").each(function(){
+            const id = parseInt($(this).attr("data-id")) || 0;
+            const tempParm = {
+                user_id: id,
+                ban_status: $(this).find(".banStatus").is(":checked")
+            }
+            parm.push(tempParm);
+        });
+
+
+        const response = await AjaxCall("/ban_users/", parm);
+        alert(response.message);
+    });
+</script>
+
+{% endblock %}

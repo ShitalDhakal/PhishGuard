@@ -19,7 +19,7 @@
     </div>
 </body>
 </html>
-{% load static %} <script src="{% static 'jquery.js' %}"></script>
+{% load static %} <script src="{% static 'library/jquery.js' %}"></script>
 {% load static %} <script src="{% static 'custom.js' %}"></script>
 <script>
     $(document).ready(async function (){
@@ -41,8 +41,8 @@
         }
 
         let request = await AjaxCall("/userLogin/", parm);
-        if(request == 200){
-            alert("success");
+        alert(request.message);
+        if(request.status == 200){
             if(role == "employee"){
                 window.location.href="/employeePage";
             }
@@ -52,9 +52,6 @@
             else{
                 window.location.href = "/analystPage";
             }
-        }
-        else{
-            alert("Failure");
         }
     }
 </script>

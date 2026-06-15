@@ -34,5 +34,13 @@ urlpatterns = [
     path('getMailData/', setup_imap.get_mail_data),
     path('testImapConnection/', setup_imap.test_connection),
     path('fetch_emails/', imap_fetcher.fetch_emails),
-    path('read_mail_from_db/', imap_fetcher.read_mail_from_db)
+    path('read_mail_from_db/', imap_fetcher.read_mail_from_db),
+    path('change_user_cred/', accountService.change_user_cred),
+    path('changeCred/', views.changeCred),
+    path('banList/', views.ban),
+    path('get_all_users/', accountService.get_all_users),
+    path('ban_users/', accountService.ban_users),
+    path('changeMailboxCred/', views.changeMailboxCred),
+    path('change_mail_cred/', setup_imap.change_mail_cred),
+    path('employeePage/', views.employeePage)
 ]
