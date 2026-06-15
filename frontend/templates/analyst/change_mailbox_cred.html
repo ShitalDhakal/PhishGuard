@@ -1,0 +1,43 @@
+{% extends 'analystLayout.html' %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-4">
+            <label class="form-label p-0">Email</label>
+            <input class="form-control form-control-sm" id="mailbox_email" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label p-0">App password</label>
+            <input type = "password" class="form-control form-control-sm" id="mailbox_pwd" />
+
+        </div>
+        <div class="col-md-4">
+            <label class="form-label p-0">Imap Server</label>
+            <input type = "text" class="form-control form-control-sm" id="imap_server" />
+        </div>
+        <div class="col-md-12 text-end">
+            <button class="btn btn-sm btn-primary" id="applyBtn">Apply</button>
+        </div> 
+    </div>  
+
+
+    <script>
+        $(document).ready(function(){
+            $("#changeMailboxCred").hide();
+        });
+
+        $("#applyBtn").on("click", async function(){
+            const parm = {
+                address: $("#mailbox_email").val(),
+                app_password: $("#mailbox_pwd").val(),
+                imap_server: $("#imap_server").val()
+            }
+            const response = await AjaxCall("/change_mail_cred/", parm);
+            alert(response.message)
+            if(response.status == 200){
+                window.location.href = "/analystPage";
+            }
+        });
+    </script>
+
+{% endblock %}

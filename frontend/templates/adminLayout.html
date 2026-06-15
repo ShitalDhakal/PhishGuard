@@ -8,9 +8,12 @@
         <link rel="stylesheet" href="{% static 'library/bootstrap.css' %}" >
     </head>
     <body>
+        <a href="/banList" id="banUsers">Ban/Unban Users</a>
+        <a href = "/changeCred" id="changeCredential" class="btn btn-sm btn-primary">Change Your Credentials</a>
+
 
         <script src="{% static 'library/jquery.js' %}"></script>
-        <script src="{% static 'library/boostrap.js' %}"></script>
+        <script src="{% static 'library/bootstrap.js' %}"></script>
         <script src="{% static 'custom.js' %}"></script>
         <script src="{% static 'admin.js' %}"></script>
         {% block content %} {% endblock %}

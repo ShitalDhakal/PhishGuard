@@ -43,3 +43,19 @@ def test_connection(request):
         print(f"Error: {e}")
         return JsonResponse({'message': 'failure', 'status': 500})
     
+@csrf_exempt
+def change_mail_cred(request):
+    try:
+        if(request.session.get("login_user_role") == "analyst"):
+            data = json.loads(request.body)
+            mail = mailbox.objects.get(address = data["address"])
+            mail.app_password = data["app_password"]
+            mail.imap_server = data["imap_server"]
+            mail.save()
+            return JsonResponse({'message': 'Changed successfully', 'status':200})
+        else:
+            return JsonResponse({'message': 'Not proper role', 'status':403})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'message': 'Server error.', 'status':500})
+

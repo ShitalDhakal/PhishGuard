@@ -24,3 +24,17 @@ def analystPage(request):
 
 def setupImap(request):
     return render(request, "analyst/setupImap.html")
+
+
+def changeCred(request):
+    return render(request, "changeCred.html")
+
+def ban(request):
+    return render(request, "admin/ban.html")
+
+def changeMailboxCred(request):
+    return render(request, "analyst/change_mailbox_cred.html")
+
+
+def employeePage(request):
+    return render(request, "employee/employeePage.html")
