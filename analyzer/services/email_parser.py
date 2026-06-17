@@ -73,7 +73,7 @@ def extract_urls(body_text, body_html):
         urls.extend(re.findall(url_pattern, body_html))
 
         # Remove duplicates while converting to a list
-        return list(set(urls))  # A set only keeps unique values, duplicates are automatically removed
+    return list(set(urls))  # A set only keeps unique values, duplicates are automatically removed
 
 
 # Function 3: Parse email date into a datetime object
