@@ -1,22 +1,10 @@
-#STEP 1: Django Setup
-import os
-import sys
-import django
-
-# Add the project root to Python's path so it can find your apps
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "PhishGuard.settings")
-django.setup()
-
-
-# Step 2 : Imports
 import imaplib
 import email
 import hashlib
 from dotenv import load_dotenv
 from Mailbox.models import EmailRecord, EmailAttachment, MailBox as mailbox
 from django.http import JsonResponse
-
+from datetime import datetime, timedelta, timezone
 
 
 def fetch_emails(request):
@@ -44,7 +32,7 @@ def fetch_emails(request):
     imap.login(username,password)    # Server will respond with a status tagged result, like 'OK' if the login was successful, or 'NO' if it failed.
     # imap.select("INBOX", readonly=True)
 
-    # Checking which folder to scan, for now it scan INBOX and SPAM folders
+    # Checking which fo,lder to scan, for now it scan INBOX and SPAM folders
     folders = ["INBOX","[Gmail]/Spam"]
 
     for folder in folders:
@@ -59,7 +47,11 @@ def fetch_emails(request):
             continue
 
         # Next, Step 3: search for UNSEEN emails
-        status, msg_ids = imap.search(None, "ALL")
+
+        latest_email = EmailRecord.objects.order_by('fetched_at').last()
+        latest_date = latest_email.fetched_at.strftime("%d-%b-%Y")
+
+        status, msg_ids = imap.search(None, f"SINCE {latest_date}") 
         if status != "OK" or not msg_ids[0]:
             print(f"No emails found in {folder}.")
             continue

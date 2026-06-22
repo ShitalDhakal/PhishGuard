@@ -16,12 +16,8 @@ class IOC(models.Model):
 
     # creates a Foreign Key in the database, establishing that one email can have many IOC
     # Each IOC row points back to the ID of a single EmailRecord.
-    email_record = models.ForeignKey(
-        EmailRecord,
-        # controls what happens to the IOC records when the parent email is deleted from PhishGuard.
-        on_delete = models.CASCADE,
-        related_name="iocs"
-    )
+
+    email_ids = models.CharField(max_length=1000)
 
     # Type of indicator (e.g. url, ip, domain, email)
     ioc_type = models.CharField(max_length=10, choices=IOC_TYPES)
@@ -50,7 +46,7 @@ class IOC(models.Model):
         # sets the default query sorting order for this model.
         ordering = ["-detected_at"] # The minus sign (-) stands for descending order (newest first).
         #  Ensure we do not store duplicate IOCs of the same type/value for the same email
-        unique_together = ('email_record', 'ioc_type', 'value')
+        unique_together = ('ioc_type', 'value')
 
     def __str__(self):
         return f"[{self.ioc_type.upper()}] {self.value} (Source: {self.source})"
