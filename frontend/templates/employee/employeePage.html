@@ -2,6 +2,23 @@
 
 {% block content %}
 
-<h2>Hello, WIP ^_^</h2>
+
+<div class="row">
+    
+</div>
+
+
+<script>
+    $(document).ready(async function(){
+        await fetchIOC();
+    });
+
+    async function fetchIOC(){
+        const parm = {
+            email: "fireryyo@gmail.com"
+        }
+        const response = await AjaxCall("/fetch_ioc/", parm);
+    }
+</script>   
 
 {% endblock %}

@@ -1,7 +1,6 @@
 import imaplib
 import email
 import hashlib
-from dotenv import load_dotenv
 from Mailbox.models import EmailRecord, EmailAttachment, MailBox as mailbox
 from django.http import JsonResponse
 from datetime import datetime, timedelta, timezone
@@ -12,7 +11,6 @@ def fetch_emails(request):
     This function connects to an IMAP server, fetches all unseen emails,
     parse them and saves each headers body on the database.
     """
-    load_dotenv()
 
     # I am assuming only one mail exists 
     data = list(mailbox.objects.all().values())
@@ -32,7 +30,7 @@ def fetch_emails(request):
     imap.login(username,password)    # Server will respond with a status tagged result, like 'OK' if the login was successful, or 'NO' if it failed.
     # imap.select("INBOX", readonly=True)
 
-    # Checking which fo,lder to scan, for now it scan INBOX and SPAM folders
+    # Checking which folder to scan, for now it scan INBOX and SPAM folders
     folders = ["INBOX","[Gmail]/Spam"]
 
     for folder in folders:

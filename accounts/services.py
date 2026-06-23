@@ -47,12 +47,9 @@ def userLogin(request):
             user = modelUser.objects.get(username=data['username'], role=data['role'])
             print(user)
             if(check_password(data['password'], user.password)):
-                if(user.is_banned):
-                    return JsonResponse({"message":"You are banned, contact your administrator.", "status": 403})
-                else:
-                    request.session['login_user_id'] = user.user_id
-                    request.session['login_user_role'] = user.role
-                    return JsonResponse({"message":"Successful login.", "status": 200})
+                request.session['login_user_id'] = user.user_id
+                request.session['login_user_role'] = user.role
+                return JsonResponse({"message":"Successful login.", "status": 200})
             else:
                 return JsonResponse({"message":"Wrong Credentials.", "status": 403})
             
@@ -110,24 +107,3 @@ def get_all_users(request):
         except Exception as e:
             print(e)
             return JsonResponse({"message":"Server error", "status":500})
-
-@csrf_exempt
-def ban_users(request):
-    if request.method == "POST":
-        try:
-            if(request.session.get("login_user_role") == "admin"):
-                data = json.loads(request.body)
-                for i in data:
-                    user = modelUser.objects.get(user_id=i["user_id"])
-                    user.is_banned = i["ban_status"]
-                    user.save()
-                    return JsonResponse({"message":"Selected users ban/unbanned successfully", "status":200})
-            else:
-                return JsonResponse({"message":"You are not logged in as proper role", "status":403})
-
-        except Exception as e:
-            print(e)
-            return JsonResponse({"message":"Server error", "status":500})
-
-    else:
-        return JsonResponse({"message":"Method not allowed", "status":403})

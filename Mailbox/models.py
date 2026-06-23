@@ -40,6 +40,8 @@ class EmailRecord(models.Model):
     is_multipart = models.BooleanField(default=False)             # True if email has multiple MIME parts
     has_attachments = models.BooleanField(default=False)           # True if attachments were found
     fetched_at = models.DateTimeField(auto_now_add=True)          # When PhishGuard ingested this email
+    score = models. IntegerField()
+    scanned = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-fetched_at"]                                # Newest emails first

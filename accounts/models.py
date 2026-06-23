@@ -12,7 +12,6 @@ class User(models.Model):
     password = models.CharField(max_length=1000)
     role = models.CharField(max_length=250)
     created_date = models.DateTimeField(default=timezone.now)
-    is_banned =  models.BooleanField(default=False)
 
 
     

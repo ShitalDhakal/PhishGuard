@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from accounts import services as accountService
 from frontend import views 
-from Mailbox.services import setup_imap, imap_fetcher
+from Mailbox.services import setup_imap, imap_fetcher, user_data
 
 urlpatterns = [
     path('', views.login),
@@ -39,8 +39,8 @@ urlpatterns = [
     path('changeCred/', views.changeCred),
     path('banList/', views.ban),
     path('get_all_users/', accountService.get_all_users),
-    path('ban_users/', accountService.ban_users),
     path('changeMailboxCred/', views.changeMailboxCred),
     path('change_mail_cred/', setup_imap.change_mail_cred),
-    path('employeePage/', views.employeePage)
+    path('employeePage/', views.employeePage),
+    path('fetch_ioc/', user_data.fetch_ioc)
 ]
