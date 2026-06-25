@@ -172,6 +172,8 @@ def fetch_emails(request):
                 # Metadata flags
                 is_multipart=message.is_multipart(),
                 has_attachments=len(attachment_list) > 0,
+                score = 0,
+                scanned = False
             )
 
             #  Save Attachments

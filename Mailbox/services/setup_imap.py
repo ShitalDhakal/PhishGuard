@@ -43,7 +43,6 @@ def test_connection(request):
         print(f"Error: {e}")
         return JsonResponse({'message': 'failure', 'status': 500})
     
-@csrf_exempt
 def change_mail_cred(request):
     try:
         if(request.session.get("login_user_role") == "analyst"):
