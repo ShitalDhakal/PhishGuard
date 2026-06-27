@@ -17,7 +17,6 @@ def adminCountCheck(request):
     return HttpResponse(adminCount)
 
 
-@csrf_exempt
 def userRegister(request):
     if request.method == 'POST':
         try:
@@ -39,7 +38,6 @@ def userRegister(request):
     else:
         return HttpResponse(500)
     
-@csrf_exempt
 def userLogin(request):
     if request.method == 'POST':
         try:

@@ -1,3 +1,4 @@
+from multiprocessing.sharedctypes import Value
 import re
 from analyzer.models import IOC
 from Mailbox.models import EmailRecord
@@ -261,22 +262,32 @@ def save_iocs(email_record, ioc_list):
     Saves a list of extracted unique IOCs to the database associated with the email_record.
     Returns the count of new database entries successfully created.
     """
-    count = 0
     for ioc in ioc_list:
                 # Django part: get_or_create() is a Django ORM method that Gets an existing database record if it already exists.
                 # Creates a new record if it does not exist.
-        obj, created = IOC.objects.get_or_create(
 
-            email_record=email_record,
-            ioc_type=ioc["type"],
-            value=ioc["value"],
-            defaults={
-                "source": ioc["source"],
-                "is_malicious": None,
-                "threat_score": None
-            }
-        )
-        if created:
-            count += 1
+        file_hash = ""
+        email_id_s = email_record.get("id")
 
-    return count
+        ioc_value = None
+
+        if(ioc["type"] == "file"):
+            file_hash = ioc["file_hash"]
+            ioc_value = IOC.objects.filter(file_hash=ioc["file_hash"]).first()
+        else:
+            ioc_value = IOC.objects.filter(value=ioc["value"]).first()
+
+        if ioc_value:
+            ioc_value.email_ids += f", {email_id_s}"
+            ioc_value.save()
+        else:
+            obj, created = IOC.objects.get_or_create(
+
+                email_ids=email_id_s,
+                ioc_type=ioc["type"],
+                value=ioc["value"],
+                source=ioc["source"],
+                is_malicious=None,
+                threat_score=None
+
+            )
