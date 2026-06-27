@@ -6,16 +6,54 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Admin Layout</title>
         <link rel="stylesheet" href="{% static 'library/bootstrap.css' %}" >
-    </head>
-    <body>
-        <a href="/banList" id="banUsers">Ban/Unban Users</a>
-        <a href = "/changeCred" id="changeCredential" class="btn btn-sm btn-primary">Change Your Credentials</a>
-
 
         <script src="{% static 'library/jquery.js' %}"></script>
         <script src="{% static 'library/bootstrap.js' %}"></script>
         <script src="{% static 'custom.js' %}"></script>
         <script src="{% static 'admin.js' %}"></script>
-        {% block content %} {% endblock %}
-    </body>
+    </head>
+<body class="d-flex min-vh-100">
+
+      <div
+        class="d-flex flex-column flex-shrink-0 p-3 bg-body-tertiary"
+        style="width: 280px"
+      >
+        <a
+          href="/"
+          class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none"
+        >
+          <svg
+            class="bi pe-none me-2"
+            width="40"
+            height="32"
+            aria-hidden="true"
+          >
+            <use xlink:href="#bootstrap"></use>
+          </svg>
+          <span class="fs-4">Admin</span>
+        </a>
+        <hr />
+        <ul class="nav nav-pills flex-column mb-auto">
+          <li>
+            <a href="/adminPage" class="nav-link link-body-emphasis">
+              <svg
+                class="bi pe-none me-2"
+                width="16"
+                height="16"
+                aria-hidden="true"
+              >
+                <use xlink:href="#speedometer2"></use>
+              </svg>
+              Dashboard
+            </a>
+          </li>
+      </div>
+
+      <div class="flex-grow-1 p-4" style="overflow-y: auto;">
+            <a href = "/changeCred" id="changeCredential" class="btn btn-sm btn-primary">Change Your Credentials</a>
+            {% block content %}
+            {% endblock %}
+      </div>
+
+</body>
 </html>

@@ -20,7 +20,7 @@ def fetch_ioc(request):
         else:
             ioc_list = list(IOC.objects.all().values())
             
-        return JsonResponse(ioc_list, safe=False)
+        return JsonResponse({"data": ioc_list, "status": 200}, safe=False)
     except Exception as e:
         print(f"Error in fetch_ioc: {e}")
         return HttpResponse(status=500)

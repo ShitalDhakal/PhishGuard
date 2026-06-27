@@ -71,7 +71,6 @@ def get_logged_in_data(request):
     return JsonResponse(data, safe=False)
 
 
-@csrf_exempt
 def change_user_cred(request):
     if request.method == 'POST':
         try:
