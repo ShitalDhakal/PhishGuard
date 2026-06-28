@@ -5,29 +5,10 @@
     <a href="/setupImap">Setup Imap</a>
     <button id="fetchMail" class="btn btn-sm btn-primary">Fetch Mail</button>
 
-    
-    <table id="mails" class="table table-sm table-bordered table-responsive" style="border: 1px solid black">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>From</th>
-                <th>To</th>
-                <th>Subject</th>
-                <th>Text</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td></td>
-            </tr>
-        </tbody>
-    </table>
 
     <script>
 
         $(document).ready(async function(){
-            await ReadMailFromDB();
         });
         $(document).on("click", "#testConnection", async function(){
             const response = await AjaxCallWithoutParm("/testImapConnection");
@@ -39,36 +20,5 @@
             }
         });
 
-        $("#fetchMail").on("click", async function(){
-            const response = await AjaxCallWithoutParm("/fetch_emails");
-            if(response["status"] == 200){
-                alert("Fetched successfully");
-                await ReadMailFromDB();
-            }
-        });
-
-        async function ReadMailFromDB(){
-            const response = await AjaxCallWithoutParm("/read_mail_from_db");
-            if(response["status"] == 200){
-                let html = ``;
-                response.data.forEach(item => {
-                    html += `
-                        <tr>
-                            <td>${item.uid}</td>
-                            <td>${item.sender}</td>
-                            <td>${item.recipient}</td>
-                            <td>${item.subject}</td>
-                            <td>${item.body_text}</td>
-                            <td>${item.date}</td>
-                        </tr>
-                    `
-                });
-
-                $("#mails > tbody").empty().append(html);
-            }
-            else{
-                alert(response["message"])
-            }
-        }
     </script>
 {% endblock %}
