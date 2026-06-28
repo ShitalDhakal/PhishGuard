@@ -278,6 +278,10 @@ def save_iocs(email_record, ioc_list):
             ioc_value = IOC.objects.filter(value=ioc["value"]).first()
 
         if ioc_value:
+            email_id_array = [int(num) for num in ioc_value.email_ids.split(",")]
+            for num in email_id_array:
+                if num == int(email_id_s):
+                    return
             ioc_value.email_ids += f", {email_id_s}"
             ioc_value.save()
         else:

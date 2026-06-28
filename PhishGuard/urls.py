@@ -42,5 +42,6 @@ urlpatterns = [
     path('changeMailboxCred/', views.changeMailboxCred),
     path('change_mail_cred/', setup_imap.change_mail_cred),
     path('employeePage/', views.employeePage),
-    path('fetch_ioc/', user_data.fetch_ioc)
+    path('fetch_ioc/', user_data.fetch_ioc),
+    path('get_ioc_overview/', user_data.get_ioc_overview)
 ]

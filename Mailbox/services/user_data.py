@@ -18,6 +18,8 @@ def fetch_ioc(request):
         if data.get('email'):
             ioc_list = list(IOC.objects.filter(email=data.get('email')).values())
         else:
+            if(request.session.get('login_user_role') != 'analyst'):
+                return JsonResponse({"message": "Only analyst can fetch all IOCs!", "status": 405}, safe=False)
             ioc_list = list(IOC.objects.all().values())
             
         return JsonResponse({"data": ioc_list, "status": 200}, safe=False)
@@ -52,4 +54,37 @@ def load_ioc(request):
         return JsonResponse({"message": "IOCs loaded successfully.", "status": 200})
     except Exception as e:
         print(f"Error in load_ioc: {e}")
+        return HttpResponse(status=500)
+    
+def get_ioc_overview(request):
+    try:
+        data = {}
+        if(request.body):
+            data = json.loads(request.body)
+
+        email_ids = []
+        ioc_list = []
+
+        if(data.get('email')):
+            emails = EmailRecord.objects.filter(recipient__icontains=data.get('email'), scanned=True)
+            for email in emails:
+                email_ids.append(email.id)
+        else:
+            if(request.session.get('login_user_role') != 'analyst'):
+                return JsonResponse({"message": "Only analyst can fetch overview!", "status": 405}, safe=False)
+            emails = EmailRecord.objects.filter(scanned=True)
+            for email in emails:
+                email_ids.append(email.id)
+
+        iocs = list(IOC.objects.filter(email_ids__in=email_ids).values())
+        for ioc in iocs:
+            email_id_array = [int(num) for num in ioc['email_ids'].split(",")]
+            if any(email_id in email_ids for email_id in email_id_array):
+                ioc_list.append(ioc)
+        
+
+
+        return JsonResponse({"data": ioc_list, "status": 200}, safe=False)
+    except Exception as e:
+        print(f"Error in get_overview: {e}")
         return HttpResponse(status=500)
