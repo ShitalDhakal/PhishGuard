@@ -4,9 +4,13 @@ charset-normalizer==3.4.7
 Django==6.0.5
 django-cors-headers==4.9.0
 idna==3.18
+numpy==2.5.0
+pandas==3.0.4
 psycopg==3.3.4
 psycopg2-binary==2.9.12
+python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
 requests==2.34.2
+six==1.17.0
 sqlparse==0.5.5
 urllib3==2.7.0
