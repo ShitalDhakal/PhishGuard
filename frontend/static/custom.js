@@ -51,8 +51,9 @@ async function AjaxCallWithoutParm(url){
 
 async function UserValidation(role){
     let data = await AjaxCallWithoutParm("/getLoginData");
+    let adminCount = parseInt(await AjaxCallWithoutParm("/checkAdminCount")) || 0;
 
-    if(data['id'] == 0 && role=='admin'){
+    if((data['id'] == 0 && role=='admin') || adminCount <= 0){
         return true;
     }
     
