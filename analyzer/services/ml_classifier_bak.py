@@ -30,8 +30,8 @@ def transform_text(text):
         y.append(   ps.stem(i))
     return " ".join(y)
 
-tfidf = pickle.load(open('vectorizer.pkl', 'rb'))
-model = pickle.load(open('model.pkl', 'rb'))
+tfidf = pickle.load(open('../ml_models/vectorizer.pkl', 'rb'))
+model = pickle.load(open('../ml_models/model.pkl', 'rb'))
 
 st.title('Email Classifier')
 input_email = st.text_input('Enter Email text')
