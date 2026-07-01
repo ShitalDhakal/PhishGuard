@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
+from Mailbox.services.email_sender import sendEmail
 import json
 
 def get_admin_count():
@@ -75,12 +76,16 @@ def change_user_cred(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body);
-            user = modelUser.objects.get(username = data['oldUsername'], role=data['role'], email=data['oldEmail'])
+            user = modelUser.objects.get(user_id=data['userId'])
             print(user)
             if(check_password(data["oldPwd"], user.password)):
                 user.username = data["newUsername"]
                 user.password = make_password(data["newPwd"])
                 user.email = data['newEmail']
+                user.modified_date = timezone.now()
+                email_subject = "PhishGuard - User Credentials Changed"
+                email_body = f"Hello {user.username},\n\nYour account credentials has been changed. Please contact your administrator about new credentials. Thank you.";
+                sendEmail(user.email, email_subject, email_body)
                 user.save()
                 return JsonResponse({"message":"Successfully changed credentials", "status":200})
             else:
@@ -97,7 +102,7 @@ def change_user_cred(request):
 def get_all_users(request):
         try:
             if(request.session.get('login_user_role') == "admin"):
-                    user = list(modelUser.objects.exclude(role = "admin").values())
+                    user = list(modelUser.objects.exclude(role="admin").values("user_id", "username", "email", "role", "created_date", "modified_date"))
                     return JsonResponse({"data":user, "status": 200})
             else:
                 return JsonResponse({"message":"You are not logged in as proper role", "status":403})

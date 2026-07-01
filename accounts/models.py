@@ -5,13 +5,13 @@ from django.utils import timezone
 
 class User(models.Model):
 
-    
     user_id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=250)
     email = models.CharField(max_length=250)
     password = models.CharField(max_length=1000)
     role = models.CharField(max_length=250)
     created_date = models.DateTimeField(default=timezone.now)
+    modified_date = models.DateTimeField(default=timezone.now)
 
 
     

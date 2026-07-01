@@ -1,0 +1,136 @@
+{% extends 'adminLayout.html' %}
+
+{% block content %}
+
+<div class="modal fade" id="userDetailsModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">User Details</h5>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control form-control-sm" id="username" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="text" class="form-control form-control-sm" id="email" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="oldPassword" class="form-label">Old Password</label>
+                            <input type="password" class="form-control form-control-sm" id="oldPassword" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control form-control-sm" id="newPassword" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-success" data-bs-dismiss="modal" id="saveUserData"><i class="bi bi-floppy"></i> Save</button>
+                <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal"><i class="bi bi-x"></i>Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-sm table-bordered table-striped table-responsive" id="userTbl">
+            <thead>
+                <tr>
+                    <th class="ps-3">ID</th>
+                    <th class="ps-3">Name</th>
+                    <th class="ps-3">Role</th>
+                    <th class="ps-3">Email</th>
+                    <th class="ps-3">Created Date</th>
+                    <th class="ps-3">Modified Date</th>
+                    <th class="ps-3">Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+
+    $(document).ready(async function() {
+        await getAllUsers();
+    });
+
+    async function getAllUsers(){
+        const response = await AjaxCallWithoutParm("/get_all_users/");
+        let tableHtml = ``;
+        response.data.forEach(item => {
+            tableHtml += `
+                <tr role="button" class="user-row" data-user-id="${item.user_id}">
+                    <td class="ps-3">${item.user_id}</td>
+                    <td class="ps-3 username">${item.username}</td>
+                    <td class="ps-3">${item.role}</td>
+                    <td class="ps-3 email">${item.email}</td>
+                    <td class="ps-3">${new Date(item.created_date).toLocaleString()}</td>
+                    <td class="ps-3">${new Date(item.modified_date).toLocaleString()}</td>
+                    <td class="ps-3"><i class="bi bi-trash text-danger" role="button" data-user-id="${item.user_id}"></i></td>
+                </tr>
+            `;
+        });
+        $("#userTbl > tbody").html(tableHtml);  
+    }
+
+    $(document).on("click", ".user-row", async function(){
+        const userId = $(this).attr("data-user-id");
+        $("#username").val($(this).find(".username").text());
+        $("#email").val($(this).find(".email").text());
+        $("#saveUserData").attr("data-user-id", userId);
+        $("#userDetailsModal").modal("show");
+    });
+
+    $("#saveUserData").on("click", async function(){
+        const oldPassword = $("#oldPassword").val().trim();
+        if(oldPassword === ""){
+            toastr.info("Please enter old password");
+            return;
+        }
+        else{
+            const parm = {
+                userId : parseInt($(this).attr("data-user-id")) || 0,
+                newUsername : $("#username").val().trim(),
+                newEmail : $("#email").val().trim(),
+                oldPwd : oldPassword,
+                newPwd : $("#newPassword").val().trim()
+            }
+
+            const response = await AjaxCall("/change_user_cred/", parm);
+            if(response.status == 200){
+                toastr.success("User details updated successfully!");
+                await getAllUsers();
+            }
+            else{
+                toastr.error(response.message);
+            }
+        }
+    });
+
+    $("#userDetailsModal").on("hidden.bs.modal", function () {
+        ClearModal();
+    });
+
+    function ClearModal(){
+        $("#username").val("");
+        $("#email").val("");
+        $("#oldPassword").val("");
+        $("#newPassword").val("");
+        $("#saveUserData").removeAttr("data-user-id");
+    }
+
+</script>
+
+{% endblock %}

@@ -38,3 +38,6 @@ def changeMailboxCred(request):
 
 def employeePage(request):
     return render(request, "employee/employeePage.html")
+
+def userList(request):
+    return render(request, "admin/userList.html")
