@@ -77,7 +77,6 @@ def change_user_cred(request):
         try:
             data = json.loads(request.body);
             user = modelUser.objects.get(user_id=data['userId'])
-            print(user)
             if(check_password(data["oldPwd"], user.password)):
                 user.username = data["newUsername"]
                 user.password = make_password(data["newPwd"])
@@ -92,7 +91,7 @@ def change_user_cred(request):
                 return JsonResponse({"message":"Wrong Credentials", "status":403})
         except Exception as e:
             print(e)
-            return JsonResponse({"message":"Wrong Credentials", "status":403})
+            return JsonResponse({"message":"Wrong Credentials", "status":500})
 
 
     else:
@@ -102,10 +101,26 @@ def change_user_cred(request):
 def get_all_users(request):
         try:
             if(request.session.get('login_user_role') == "admin"):
-                    user = list(modelUser.objects.exclude(role="admin").values("user_id", "username", "email", "role", "created_date", "modified_date"))
+                    user = list(modelUser.objects.values("user_id", "username", "email", "role", "created_date", "modified_date"))
                     return JsonResponse({"data":user, "status": 200})
             else:
                 return JsonResponse({"message":"You are not logged in as proper role", "status":403})
         except Exception as e:
             print(e)
             return JsonResponse({"message":"Server error", "status":500})
+        
+def delete_user(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user = modelUser.objects.get(user_id=data['userId'])
+            if(check_password(data["oldPwd"], user.password)):
+                user.delete()
+                return JsonResponse({"message":"User deleted successfully", "status":200})
+            else:
+                return JsonResponse({"message":"Wrong Credentials", "status":403})
+        except Exception as e:
+            print(e)
+            return JsonResponse({"message":"Server error", "status":500})
+    else:
+        return JsonResponse({"message":"Method not allowed", "status":403})

@@ -70,7 +70,7 @@ def sendEmail(address, subject, body):
     mailbox = MailBox.objects.first()
     try:
         with smtplib.SMTP_SSL(mailbox.imap_server, 465) as server:
-            server.login(mailbox.email, mailbox.app_password)
+            server.login(mailbox.address, mailbox.app_password)
             msg = MIMEMultipart()
             msg['From'] = SENDER_EMAIL
             msg['To'] = address

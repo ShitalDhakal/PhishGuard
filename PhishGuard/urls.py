@@ -43,5 +43,7 @@ urlpatterns = [
     path('employeePage/', views.employeePage),
     path('fetch_ioc/', user_data.fetch_ioc),
     path('get_ioc_overview/', user_data.get_ioc_overview),
-    path('userList/', views.userList)
+    path('userList/', views.userList),
+    path('delete_user/', accountService.delete_user),
+    path('get_email_overview/', user_data.get_email_overview)
 ]

@@ -1,25 +1,49 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="{% static 'library/bootstrap.css' %}" >
+    <link rel="stylesheet" href="{% static 'library/toastr.css' %}" >
+
+    <script src="{% static 'library/jquery.js' %}"></script>
+    <script src="{% static 'library/boostrap.js' %}"></script>
+    <script src="{% static 'library/toastr.min.js' %}"></script>
+    <script src="{% static 'custom.js' %}"></script>
 </head>
 <body>
-    <div>
-        <input type="text" id="adminUsername" class="form-control form-control-sm" placeholder="Enter username" />
-        <input type="password" id="adminPwd" class="form-control form-control-sm" placeholder="Enter password" />
-        <select id="roleSelection">
-            <option value="employee">Employee</option>
-            <option value="analyst">Analyst</option>
-            <option value="admin">Admin</option>
-        </select>
-        <button onclick="submitAdmin()">Submit</button>
+    <div class="row">
+    <div class="card col-md-8 mx-auto mt-5 ">
+        <div class="card-body">
+            <h5 class="display-6 mb-4">Login</h5>
+            <div class="row">
+                <div class="col-md-12 mb-4">
+                    <label class="form-label p-0">Username</label>
+                    <input type="text" class="form-control form-control-sm" id="adminUsername" placeholder="Enter username" />
+                </div>
+                <div class="col-md-12 mb-4">
+                    <label class="form-label p-0">Password</label>
+                    <input type="password" class="form-control form-control-sm" id="adminPwd" placeholder="Enter password" />
+                </div>
+                <div class="col-md-12 mb-4">
+                    <label class="form-label p-0">Role</label>
+                    <select id="roleSelection" class="form-select form-select-sm">
+                        <option value="employee">Employee</option>
+                        <option value="analyst">Analyst</option>
+                        <option value="admin">Admin</option>
+                    </select>
+            </div>
+            <div class="col-md-12 mt-4 text-center">
+                <button class="btn btn-primary" onclick="submitAdmin()">Submit</button>
+            </div>
+        </div>
     </div>
+    </div>
+
 </body>
 </html>
-{% load static %} <script src="{% static 'library/jquery.js' %}"></script>
-{% load static %} <script src="{% static 'custom.js' %}"></script>
 <script>
     $(document).ready(async function (){
         let adminCount = parseInt(await AjaxCallWithoutParm("/checkAdminCount")) || 0;
@@ -40,13 +64,13 @@
         }
 
         let request = await AjaxCall("/userLogin/", parm);
-        alert(request.message);
+        toastr.info(request.message);
         if(request.status == 200){
             if(role == "employee"){
                 window.location.href="/employeePage";
             }
             else if(role == "admin"){
-                window.location.href = "/adminPage";
+                window.location.href = "/userList";
             }
             else{
                 window.location.href = "/analystPage";

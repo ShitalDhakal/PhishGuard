@@ -32,14 +32,58 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-sm btn-success" data-bs-dismiss="modal" id="saveUserData"><i class="bi bi-floppy"></i> Save</button>
                 <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal"><i class="bi bi-x"></i>Close</button>
+                <button type="button" class="btn btn-sm btn-secondary" id="deleteUserBtn"><i class="bi bi-trash"></i>Delete</button>
+                <button type="button" class="btn btn-sm btn-success" data-bs-dismiss="modal" id="saveUserData"><i class="bi bi-floppy"></i> Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="createUserModal">
+
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create User</h5>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control form-control-sm" id="createUsername" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="text" class="form-control form-control-sm" id="createEmail" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control form-control-sm" id="createPassword" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Role</label>
+                            <select class="form-select form-select-sm" id="createRole">
+                                <option value="employee">Employee</option>
+                                <option value="analyst">Analyst</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal"><i class="bi bi-x"></i>Close</button>
+                <button type="button" class="btn btn-sm btn-success" data-bs-dismiss="modal" id="createUser"><i class="bi bi-floppy"></i> Save</button>
             </div>
         </div>
     </div>
 </div>
 
 <div class="row">
+    <div class="col-md-12 mb-4">
+        <button class="btn btn-sm btn-primary" id="addUserBtn"><i class="bi bi-plus"></i>Add Users</button>
+    </div>
     <div class="col-md-12">
         <table class="table table-sm table-bordered table-striped table-responsive" id="userTbl">
             <thead>
@@ -50,7 +94,6 @@
                     <th class="ps-3">Email</th>
                     <th class="ps-3">Created Date</th>
                     <th class="ps-3">Modified Date</th>
-                    <th class="ps-3">Delete</th>
                 </tr>
             </thead>
             <tbody>
@@ -78,7 +121,6 @@
                     <td class="ps-3 email">${item.email}</td>
                     <td class="ps-3">${new Date(item.created_date).toLocaleString()}</td>
                     <td class="ps-3">${new Date(item.modified_date).toLocaleString()}</td>
-                    <td class="ps-3"><i class="bi bi-trash text-danger" role="button" data-user-id="${item.user_id}"></i></td>
                 </tr>
             `;
         });
@@ -90,6 +132,7 @@
         $("#username").val($(this).find(".username").text());
         $("#email").val($(this).find(".email").text());
         $("#saveUserData").attr("data-user-id", userId);
+        $("#deleteUserBtn").attr("data-user-id", userId);
         $("#userDetailsModal").modal("show");
     });
 
@@ -131,6 +174,73 @@
         $("#saveUserData").removeAttr("data-user-id");
     }
 
+
+    $("#deleteUserBtn").on("click", async function(){
+        const userId = parseInt($(this).attr("data-user-id")) || 0;
+        const oldPassword = $("#oldPassword").val().trim();
+        if(oldPassword === ""){
+            toastr.info("Please enter old password");
+            return;
+        }
+        if(userId > 0){
+            const parm = {
+                userId : userId,
+                oldPwd : oldPassword
+            }
+            Swal.fire({
+            title: "Are you sure?",
+            icon: "question",
+            confirmButtonText: "Yes, delete it!",
+            denyButtonText: `No`
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    const response = await AjaxCall("/delete_user/", parm);
+                    if(response.status == 200){
+                        toastr.success("User deleted successfully!");
+                        await getAllUsers();
+                        $("#userDetailsModal").modal("hide");
+                    }
+                    else{
+                        toastr.error(response.message);
+                    }
+                }
+            });
+
+        }
+    });
+
+    $("#createUserModal").on("hidden.bs.modal", function () {
+        $("#username").val("");
+        $("#email").val("");
+        $("#password").val("");
+        $("#role").val("employee");
+    });
+
+    $("#addUserBtn").on("click", function(){
+        $("#createUserModal").modal("show");
+    });
+
+    $("#createUser").on("click", async function(){
+        const parm = {
+            username : $("#createUsername").val().trim(),
+            email : $("#createEmail").val().trim(),
+            password : $("#createPassword").val().trim(),
+            role : $("#createRole").val()
+        }
+        if(parm.username == "" || parm.email == "" || parm.password == ""){
+            toastr.info("Please fill all the fields");
+            return;
+        }
+        const response = await AjaxCall("/userRegister/", parm);
+        if(response == 200){
+            toastr.success("User created successfully!");
+            await getAllUsers();
+            $("#createUserModal").modal("hide");
+        }
+        else{
+            toastr.error(response.message);
+        }
+    });
 </script>
 
 {% endblock %}
