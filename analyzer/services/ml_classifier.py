@@ -1,4 +1,5 @@
 import os
+import re
 import pickle
 import logging
 import string
@@ -43,9 +44,25 @@ _vectorizer = None
 # PorterStemmer instance — reused across calls (stateless, safe to share).
 _ps = PorterStemmer()
 
+def strip_keywords_line(text):
+    """
+    Removes the artificial 'Keywords: ...' line injected into synthetic phishing
+    training emails in phishing_legit_dataset_KD_10000.csv.
+
+    Applied defensively at inference time so that any email containing a literal
+    'Keywords:' line (e.g. a tech digest) is not unfairly biased toward phishing.
+
+    Example:
+        Input : 'Your account is locked.\n\nKeywords: pin password ssn\n\nRegards'
+        Output: 'Your account is locked.\n\nRegards'
+    """
+    return re.sub(r'Keywords:.*', '', text, flags=re.IGNORECASE).strip()
+
+
 def transform_text(text):
     """
-    Preprocesses raw email text using the same pipeline as ml_classifier.py.
+    Preprocesses raw email text to match the exact cleaning pipeline used
+    during model training in ml_classifier_phishing.md.
     Steps:
         1. Convert text to lowercase.
            Example: "LOCKED Account" → "locked account"
@@ -131,10 +148,10 @@ def load_models():
 
 def classify(email_body):
     """
-    Calculates the probability that the email body is spam/phishing.
+    Calculates the probability that the email body is phishing.
 
     Input: email_body (string)
-    Returns: ml_score (int: 0 to 100) representing spam probability
+    Returns: ml_score (int: 0 to 100) representing phishing probability
     """
 
     # 1. Check for missing body
@@ -154,26 +171,25 @@ def classify(email_body):
         return 0
 
     try:
-        # 3. Preprocess the raw email body to match the training pipeline
-        #    (lowercase → tokenize → remove stopwords → stem)
-        #    Without this step, words like "claiming" won't match the trained token "claim".
-        cleaned_text = transform_text(email_body)
+        # 3. Strip any 'Keywords: ...' lines (defensive — matches training preprocessing)
+        #    then preprocess: lowercase → tokenize → remove stopwords → stem
+        #    Without this step, words like "locked" won't match the trained token "lock".
+        cleaned_text = transform_text(strip_keywords_line(email_body))
 
         # 4. Vectorize the cleaned text using the trained TF-IDF vectorizer
         #    Converts the cleaned string into a 3000-dimensional numerical vector.
         vectorized_text = _vectorizer.transform([cleaned_text])
 
         # 5. Predict probability
-        # classes_ order is [0=ham, 1=spam]
-        probabilities = _model.predict_proba(vectorized_text)[0] # predict_proba() predicts the probability of the input belonging to each class.
-        classes = _model.classes_ # returns the class labels in the same order as the probabilities.
+        # classes_ order is [0=legitimate, 1=phishing]
+        probabilities = _model.predict_proba(vectorized_text)[0]
+        classes = _model.classes_
 
-        # Find the index of the spam class (encoded as 1)
+        # Find the index of the phishing class (encoded as 1)
         phishing_index = list(classes).index(1)
-        # Use the spam index to retrieve the corresponding spam probability from the predicted probabilities.
         phishing_probability = probabilities[phishing_index]
 
-        # 6. Convert the spam probability (0.0–1.0) into a percentage score (0–100).
+        # 6. Convert the phishing probability (0.0–1.0) into a percentage score (0–100).
         ml_score = int(round(phishing_probability * 100))
 
         # Return the final machine learning spam score.
@@ -185,34 +201,69 @@ def classify(email_body):
 
 if __name__ == "__main__":
     test_mail = [
-        "Congratulations! You have won a FREE prize. Call now to claim!",
-        "Hey, are you coming to the meeting tomorrow?",
-        "URGENT: Your account will be suspended. Click here to verify.",
-        "Dear user, We noticed unusual activity on your Amazon account. Please verify your identity within 24 hours to avoid suspension. Click here to verify: http://192.168.1.100/phishing-demo (test link)",
-        """Dear People’s Bank Client,
-    
-                For your security, the profile that you are using to access People’s Bank Online Banking has been locked because
-                of too many failed login attempts. You can unlock this profile online by selecting an option below:
-    
-                Unlock your profile with:
-                - My ATM/Visa Check Card number and PIN.
-                - Other personal information (Social Security Number, Account #, etc.).
-                - E-mail address.
-    
-                We regret any inconvenience this may cause you.
-    
-                Sincerely,
-                People’s Bank Account Review Department.
-    
-                We are requesting this information to verify and protect your identity. This is in order to prevent the use of the U.S.
-                banking system in terrorist and other illegal activity.
-    
-                Need help? Use "Site Helper" or call customer service at 1.800.788.7000.
-                Please do not "Reply" to this Alert."""
+        # -- Legitimate emails (expected: score <= 50) --
+        (
+            "Legitimate",
+            """Subject: Project Planning Meeting Next Week
+
+            Hi team, 
+            
+            I would like to schedule a quick Zoom meeting to go over the project timeline next week. Please check your calendar and let me know if Monday afternoon works for you, or suggest an alternative time. I will send a calendar invite once we confirm.
+            
+            Warm regards,
+            Sarah
+            """
+        ),
+        (
+            "Phishing",
+            """Dear People's Bank Client,
+
+            Your profile has been locked because of too many failed login attempts.
+            Unlock your profile using your ATM/Visa Check Card number and PIN,
+            or your Social Security Number and Account number.
+
+            People's Bank Account Review Department."""
+        ),
+        (
+            "Phishing",
+            """CONGRATULATIONS! Your email was selected as the GRAND PRIZE WINNER
+            of our International Online Promotional Lottery worth $606,009.
+            Claim your prize immediately to avoid forfeiture. Act now."""
+        ),
+        # -- Legitimate emails (expected: score < 50) --
+        (
+            "Legitimate",
+            """Subject: Project update review
+
+            Hi team, thanks for the review. Please verify your tasks before the meeting tomorrow.
+
+            Best, Sam"""
+        ),
+        (
+            "Legitimate",
+            """Subject: Appointment reminder
+
+            This is a reminder that you have an appointment on May 08, 2026 at 10:45 AM.
+            To reschedule or cancel, please use the link below.
+
+            Appointment Desk"""
+        ),
+        (
+            "Legitimate",
+            """Subject: Newsletter subscription confirmation
+
+            Congratulations, you are subscribed! Click here to update your profile settings.
+
+            Regards, Alex"""
+        ),
     ]
 
     print("=== ML Classifier Test ===")
-    for _mail in test_mail:
+    correct = 0
+    for expected, _mail in test_mail:
         score = classify(_mail)
         label = "Phishing" if score >= 50 else "Legitimate"
-        print(f"[{label:4s}] Score={score:3d}   {_mail[:60]}")
+        match = "✓" if label == expected else "✗"
+        correct += 1 if label == expected else 0
+        print(f"{match} [{label:9s}] Score={score:3d}   {_mail[:60].strip()}")
+    print(f"\nResult: {correct}/{len(test_mail)} correct")
