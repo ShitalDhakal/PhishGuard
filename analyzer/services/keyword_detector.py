@@ -6,7 +6,10 @@ PHISHING_KEYWORDS = {
         "words" : [ # key : list of keywords
             "immediately", "within 24 hours", "urgent", "action required",
             "suspended", "blocked", "closed", "terminated", "critical limit",
-            "asap", "final notice", "expiration", "deactivated"
+            "asap", "final notice", "expiration", "deactivated",
+            # Account-locking patterns common in formal bank phishing
+            "locked", "lock your account", "failed login", "too many failed",
+            "account has been locked", "profile has been locked"
         ]
     },
     "financial" : {
@@ -22,14 +25,22 @@ PHISHING_KEYWORDS = {
         "words" : [
             "unauthorized access", "security alert", "suspicious login",
             "reset password", "verification code", "compromised", "identity theft",
-            "login attempt", "security department"
+            "login attempt", "security department",
+            # Credential-harvesting patterns used in formal bank/identity phishing
+            "atm", "pin", "social security", "social security number",
+            "account review", "verify your identity", "protect your identity",
+            "verify and protect", "prevent unauthorized", "illegal activity",
+            "unusual activity"
         ]
     },
     "call_to_action" :{
         "weight" : 1,
         "words" : [
             "click here", "verify now", "login below", "confirm identity",
-            "update account", "link below", "access your account", "verify account"
+            "update account", "link below", "access your account", "verify account",
+            # Unlock / unlock-profile patterns used in bank account phishing
+            "unlock your profile", "unlock your account", "selecting an option",
+            "personal information", "do not reply"
         ]
     }
 }
