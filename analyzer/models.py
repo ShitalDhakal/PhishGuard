@@ -1,5 +1,6 @@
 from django.db import models
 from Mailbox.models import EmailRecord
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 # Create your models here.
 class IOC(models.Model):
@@ -50,3 +51,35 @@ class IOC(models.Model):
 
     def __str__(self):
         return f"[{self.ioc_type.upper()}] {self.value} (Source: {self.source})"
+    
+class AnalysisReport(models.Model):
+
+    VERDICT_CHOICES = [
+        ("Safe" ,"Safe"),
+        ("Suspicious", "Suspicious"),
+        ("Malicious", "Malicious")
+    ]
+
+
+    CLASSIFICATION_CHOICES = [
+        ('Clean', 'Clean'),
+        ('Spam', 'Spam'),
+        ('Phishing', 'Phishing'),
+    ]
+
+    email_id = models.ForeignKey(EmailRecord, on_delete=models.CASCADE)
+    overall_risk_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], default = 0)
+    verdict =  models.CharField(max_length=20, choices=VERDICT_CHOICES, default="Safe")
+    classification = models.CharField(max_length=20, choices=CLASSIFICATION_CHOICES, default="Clean")
+    phising_type = models.CharField(max_length=50, null=True)
+    ioc_risk_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], default = 0)
+    ml_risk_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], default = 0)
+    authentication_risk_score = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], default = 0)
+    analyst_notes = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"] # for showing newest data
+
+    def __str__(self):
+        return f"Analysis Report for Email ID: {self.email_id.id} - Verdict: {self.verdict}, Classification: {self.classification}"
