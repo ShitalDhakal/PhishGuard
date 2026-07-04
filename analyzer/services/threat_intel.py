@@ -153,7 +153,9 @@ def update_email_iocs(email_record):
     """
     # Fetch all IOC records linked to this email
     # When Django runs IOC.objects.filter(...), it pulls all rows from the database and turns them into a list of Python objects in memory
-    iocs = IOC.objects.filter(email_record=email_record)
+    # Search the 'email_ids' text column to find all IOCs associated with this email's ID.
+    iocs = IOC.objects.filter(email_ids__contains=str(email_record.id))
+
     if not iocs.exists():
         return 0
 

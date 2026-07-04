@@ -267,7 +267,9 @@ def save_iocs(email_record, ioc_list):
                 # Creates a new record if it does not exist.
 
         file_hash = ""
-        email_id_s = email_record.get("id")
+
+        # Convert the Django object ID to a string so it can be saved in a text (CharField) column.
+        email_id_s = str(email_record.id)
 
         ioc_value = None
 
