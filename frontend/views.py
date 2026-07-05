@@ -41,3 +41,6 @@ def employeePage(request):
 
 def userList(request):
     return render(request, "admin/userList.html")
+
+def email_data(request):
+    return render(request, "analyst/emailData.html")

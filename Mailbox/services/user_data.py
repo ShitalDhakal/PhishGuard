@@ -29,29 +29,19 @@ def fetch_ioc(request):
         return HttpResponse(status=500)
     
 
-def load_ioc(request):
+def load_ioc(parsed_email):
     try:
-        unscanned_queryset = EmailRecord.objects.filter(scanned=False)
-        emails = list(unscanned_queryset)
-        
-        if not emails:
-            return JsonResponse({"message": "No new emails to process.", "status": 200})
-
         email_with_iocs = []
-        for email in emails:
-            parsed_email = parse_email(email)
-            email_with_iocs.append({
-                "email": parsed_email, 
-                "iocs": extract_iocs(parsed_email)
-            })
+        email_with_iocs.append({
+            "email": parsed_email, 
+            "iocs": extract_iocs(parsed_email)
+        })
 
         for item in email_with_iocs:
             email_record = item.get("email")
             iocs = item.get("iocs")
             save_iocs(email_record, iocs)
 
-        unscanned_queryset.update(scanned=True)
-        
         return JsonResponse({"message": "IOCs loaded successfully.", "status": 200})
     except Exception as e:
         print(f"Error in load_ioc: {e}")

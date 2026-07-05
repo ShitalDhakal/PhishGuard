@@ -19,6 +19,7 @@ from django.urls import path
 from accounts import services as accountService
 from frontend import views 
 from Mailbox.services import setup_imap, imap_fetcher, user_data
+from analyzer.services import analyze_email
 
 urlpatterns = [
     path('', views.login),
@@ -45,5 +46,7 @@ urlpatterns = [
     path('get_ioc_overview/', user_data.get_ioc_overview),
     path('userList/', views.userList),
     path('delete_user/', accountService.delete_user),
-    path('get_email_overview/', user_data.get_email_overview)
+    path('get_email_overview/', user_data.get_email_overview),
+    path('email_data/', views.email_data),
+    path('analyze_email/', analyze_email.analyze_email)
 ]
