@@ -42,6 +42,8 @@ class IOC(models.Model):
 
     file_hash = models.CharField(null=True, blank=True)
 
+    is_scanned = models.BooleanField(default=False)
+
     class Meta:
 
         # sets the default query sorting order for this model.

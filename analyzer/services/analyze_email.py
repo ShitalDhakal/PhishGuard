@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def analyze_email(request):
 
-    fetch_emails()
+    fetch_emails(request)
     data = {}
     if request.body:
         data = json.loads(request.body)
@@ -39,6 +39,7 @@ def analyze_email(request):
     for email_record in unscanned_emails:
         parsed_data = parse_email(email_record)
         try:
+            print("Analyzing headers...")
             auth_data = analyze_headers(parsed_data)
             logger.debug("Step 2 complete: auth_score=%d", auth_data.get("auth_score", 0))
         except Exception as e:
@@ -47,6 +48,7 @@ def analyze_email(request):
 
 
         try:
+            print("Extracting IOCs...")
             load_ioc(parsed_data)
         except Exception as e:
             logger.error("Step 3 FAILED (save_iocs): %s", e)
@@ -57,6 +59,7 @@ def analyze_email(request):
     # Scans subject + body for phishing keyword categories.
     # Returns keyword_score (0–15) and matched evidence.
         try:
+            print("Detecting keywords...")
             subject   = parsed_data.get("subject", "") or ""
             body_text = parsed_data.get("body_text", "") or ""
             keyword_data = detect_keywords(subject, body_text)
@@ -70,6 +73,7 @@ def analyze_email(request):
     # Returns ioc_score: 35 if any IOC is malicious, 0 if all clean.
     # Note: This step can take 15–60 seconds due to API rate limits.
         try:
+            print("Updating email IOCs...")
             ioc_score = update_email_iocs(email_record)
             logger.debug("Step 5 complete: ioc_score=%d", ioc_score)
         except Exception as e:
@@ -80,6 +84,7 @@ def analyze_email(request):
     # Classifies the email body using the trained MultinomialNB model.
     # Returns ml_score (0–100) — phishing probability percentage.
         try:
+            print("Analyzing body text...")
             ml_score = classify(body_text)
             logger.debug("Step 6 complete: ml_score=%d", ml_score)
         except Exception as e:
@@ -92,6 +97,7 @@ def analyze_email(request):
     # assigns a verdict (SAFE / SUSPICIOUS / MALICIOUS),
     # and determines the phishing sub-category.
         try:
+            print("Calculating final risk score...")
             risk_result = analyze_threat_risk(auth_data, keyword_data, ioc_score, ml_score)
             logger.info(
                 "Step 7 complete: score=%d verdict=%s type=%s",
@@ -118,6 +124,7 @@ def analyze_email(request):
     #   2. If found   → UPDATE that row with the new values from defaults={}
     #   3. If not found → CREATE a new row using both email_id and defaults={}
     #
+        print("Saving analysis report...")
         report, created = AnalysisReport.objects.update_or_create(
             # This is the LOOKUP FIELD. Django uses this to search: "Does a report for this email exist?"
             email_id=email_record,

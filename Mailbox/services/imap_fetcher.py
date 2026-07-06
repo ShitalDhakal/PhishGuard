@@ -5,6 +5,8 @@ from Mailbox.models import EmailRecord, EmailAttachment, MailBox as mailbox
 from django.http import JsonResponse
 from datetime import datetime, timedelta, timezone
 
+from analyzer.models import IOC
+
 
 def fetch_emails(request):
     """
@@ -178,14 +180,25 @@ def fetch_emails(request):
 
             #  Save Attachments
             for att in attachment_list:
-                EmailAttachment.objects.create(
-                    email=record,
-                    filename=att["filename"],
-                    content_type=att["content_type"],
-                    size=att["size"],
-                    file_hash=att["file_hash"],
-                    content=att["content"],
-                )
+                ioc_list = IOC.objects.filter(file_hash=att["file_hash"])
+                if ioc_list.exists():
+                    ioc = ioc_list.first()
+                    # If the IOC already exists, append this email's ID to its email_ids field
+                    if str(record.id) not in ioc.email_ids.split(","):
+                        ioc.email_ids += f",{record.id}"
+                        ioc.save()
+
+                else:
+                    IOC.objects.create(
+                        email_ids=str(record.id),
+                        ioc_type="hash",
+                        value=att["filename"],
+                        file_hash=att["file_hash"],
+                        source="attachment",
+                        detected_at=datetime.now(timezone.utc),
+                        is_malicious=None,
+                        threat_score=None,
+                    )
 
             print(f" Saved: [{uid_value}] {subject}")
             if attachment_list:

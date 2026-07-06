@@ -269,7 +269,7 @@ def save_iocs(email_record, ioc_list):
         file_hash = ""
 
         # Convert the Django object ID to a string so it can be saved in a text (CharField) column.
-        email_id_s = str(email_record.id)
+        email_id_s = str(email_record.get("id"))
 
         ioc_value = None
 

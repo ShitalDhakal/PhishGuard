@@ -163,22 +163,26 @@ def update_email_iocs(email_record):
 
     for ioc in iocs:
         # Only query API if the IOC hasn't been checked yet
-        if ioc.is_malicious is None:
+        if ioc.is_scanned is False:
             is_malicious = False
             score = 0
 
             if ioc.ioc_type == "ip":
+                print("Checking IP Reputation...")
                 is_malicious, score = check_ip_reputation(ioc.value)
 
             elif ioc.ioc_type == "url":
+                print("Checking URL Reputation...")
                 is_malicious, score = check_url_reputation(ioc.value)
                 time.sleep(15)  # Enforce rate limit sleep for VirusTotal (4 req/min)
 
             elif ioc.ioc_type == "domain":
+                print("Checking Domain Reputation...")
                 is_malicious, score = check_domain_reputation(ioc.value)
                 time.sleep(15)  # Enforce rate limit sleep for VirusTotal (4 req/min)
 
             elif ioc.ioc_type == "hash":
+                print("Checking File Hash Reputation...")
                 is_malicious, score = check_file_hash_reputation(ioc.value)
                 time.sleep(15)  # Enforce rate limit sleep for VirusTotal (4 req/min)
 
