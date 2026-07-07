@@ -49,7 +49,9 @@ def fetch_emails(request):
         # Next, Step 3: search for UNSEEN emails
 
         latest_email = EmailRecord.objects.order_by('fetched_at').last()
-        latest_date = latest_email.fetched_at.strftime("%d-%b-%Y")
+        latest_date = "01-Jan-1970"
+        if latest_email:
+            latest_date = latest_email.fetched_at.strftime("%d-%b-%Y")
 
         status, msg_ids = imap.search(None, f"SINCE {latest_date}") 
         if status != "OK" or not msg_ids[0]:

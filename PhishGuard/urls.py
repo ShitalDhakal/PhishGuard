@@ -19,7 +19,7 @@ from django.urls import path
 from accounts import services as accountService
 from frontend import views 
 from Mailbox.services import setup_imap, imap_fetcher, user_data
-from analyzer.services import analyze_email
+from analyzer.services import analyze_email, analyzed_data_apis
 
 urlpatterns = [
     path('', views.login),
@@ -48,5 +48,6 @@ urlpatterns = [
     path('delete_user/', accountService.delete_user),
     path('get_email_overview/', user_data.get_email_overview),
     path('email_data/', views.email_data),
-    path('analyze_email/', analyze_email.analyze_email)
+    path('analyze_email/', analyze_email.analyze_email),
+    path('get_email_data_and_scores/', analyzed_data_apis.get_email_data_and_scores)
 ]

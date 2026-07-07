@@ -164,7 +164,7 @@ def update_email_iocs(email_record):
     for ioc in iocs:
         # Only query API if the IOC hasn't been checked yet
         if ioc.is_scanned is False:
-            is_malicious = False
+            is_malicious = False    
             score = 0
 
             if ioc.ioc_type == "ip":
@@ -189,6 +189,7 @@ def update_email_iocs(email_record):
             # Save the results to database
             ioc.is_malicious = is_malicious
             ioc.threat_score = score
+            ioc.is_scanned = True
             ioc.save()
 
         # If any IOC is malicious, flag this email as having malicious IOCs

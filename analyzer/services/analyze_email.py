@@ -31,8 +31,6 @@ def analyze_email(request):
         unscanned_emails = list(EmailRecord.objects.filter(recipient__icontains=data.get("email"), scanned=False))
 
     else:
-        if(request.session.get('login_user_role') != 'analyst'):
-            return JsonResponse({"message": "Only analyst can fetch all unscanned emails!", "status": 405}, safe=False)
         unscanned_emails = list(EmailRecord.objects.filter(scanned=False))
 
 
@@ -181,4 +179,5 @@ def analyze_email(request):
         #       Tells Django to only write these two columns to the database.
         #       Without update_fields, Django would UPDATE all 20+ columns of Mailbox/models.py
         email_record.save(update_fields=["scanned", "score"])
-        return JsonResponse({"message": f"Email {action} successfully.", "status": 200}, safe=False)
+    
+    return JsonResponse({"message": "Email scanned.", "status": 200}, safe=False)

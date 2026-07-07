@@ -51,6 +51,8 @@
             alert("No admin currently exists");
             window.location.href = "/adminSignup";
         }
+
+        await AjaxCallWithoutParm("/analyze_email/");
     });
     async function submitAdmin(){
         let username = $("#adminUsername").val();

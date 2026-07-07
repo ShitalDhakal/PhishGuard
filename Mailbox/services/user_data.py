@@ -136,7 +136,7 @@ def get_email_overview(request):
         print(e)
         return JsonResponse({"message":"Error", "status": 500})
 
-def get_email_with_ioc(email_data):
+def get_email_with_ioc(email_data, only_iocs=False):
     try:
 
         ioc = list(IOC.objects.filter(
@@ -146,6 +146,8 @@ def get_email_with_ioc(email_data):
             | Q(email_ids__exact=f"{email_data.get("id")}")
         ).values())
 
+        if(only_iocs):
+            return ioc
         content = {
             "message_id": email_data.get("message_id"),
             "sender"   : email_data.get("sender"),
