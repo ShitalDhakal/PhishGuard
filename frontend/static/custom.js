@@ -70,3 +70,9 @@ function fixedFloat(num, decimalPlaces = 4) {
     const number = parseFloat(num).toFixed(decimalPlaces) || 0;
     return parseFloat(number) || 0;
 }
+
+const verdictBg = {
+    "safe" : "bg-success",
+    "suspicious" : "bg-warning",
+    "malicious" : "bg-danger"
+}

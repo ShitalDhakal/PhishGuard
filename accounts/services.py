@@ -1,3 +1,5 @@
+from httpx import request
+
 from . models import User as modelUser
 from django.http import JsonResponse
 from django.http import HttpResponse
@@ -100,7 +102,7 @@ def change_user_cred(request):
 
 def get_all_users(request):
         try:
-            if(request.session.get('login_user_role') == "admin"):
+            if(request.session.get('login_user_role') in {"admin", "analyst"}):
                     user = list(modelUser.objects.values("user_id", "username", "email", "role", "created_date", "modified_date"))
                     return JsonResponse({"data":user, "status": 200})
             else:
@@ -124,3 +126,6 @@ def delete_user(request):
             return JsonResponse({"message":"Server error", "status":500})
     else:
         return JsonResponse({"message":"Method not allowed", "status":403})
+    
+def getCurrentRole(request):
+    return JsonResponse({"role": request.session.get('login_user_role')}, safe=False)

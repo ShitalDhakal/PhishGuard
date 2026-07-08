@@ -8,10 +8,12 @@
     <link rel="stylesheet" href="{% static 'library/bootstrap.css' %}" >
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" >
     <link rel="stylesheet" href="{% static 'library/sidebars.css' %}" >
+    <link rel="stylesheet" href="{% static 'library/toastr.css' %}" >
 
     <script src="{% static 'library/jquery.js' %}"></script>
     <script src="{% static 'library/bootstrap.js' %}"></script>
-    <script src="{% static 'library/chart.umd.js' %}"></script>
+    <script src="{% static 'library/echarts.min.js' %}"></script>
+    <script src="{% static 'library/toastr.min.js' %}"></script>
     <script src="{% static 'custom.js' %}"></script>
     <script src="{% static 'analyst.js' %}"></script>
 </head>
@@ -52,5 +54,7 @@
             {% endblock %}
       </div>
 
+      {% block scripts %}
+      {% endblock %}
 </body>
 </html>
