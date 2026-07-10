@@ -51,7 +51,8 @@
             alert("No admin currently exists");
             window.location.href = "/adminSignup";
         }
-
+        
+        setCookie("csrftoken", "crsftoken");
         await AjaxCallWithoutParm("/analyze_email/");
     });
     async function submitAdmin(){
@@ -78,5 +79,11 @@
                 window.location.href = "/analystPage";
             }
         }
+    }
+
+
+    function setCookie(name, value, days = 7){
+        const maxDays = days * 24 * 60 * 60; // convert to seconds
+        document.cookie = `${name}=${value}; max-age=${maxDays}; path=/`;
     }
 </script>

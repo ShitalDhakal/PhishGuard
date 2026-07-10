@@ -1,36 +1,13 @@
 {% extends 'analystLayout.html' %}
-
+{% load static %}
 {% block content %}
 
-    <div class="row">
-        <div class="col-md-4">
-            <canvas id="barChart"></canvas>
-            
-        </div>
-    </div>
+    {% include 'dashboard.html' %}
 
+{% endblock %}
 
-    <script>
+{% block scripts %}
 
-        async function fetch_ioc_overview(){
-            const response = await AjaxCallWithoutParm("/get_ioc_overview/");
-            if(response["status"] == 200){
-                console.log(response["data"]);
-            }
-            else{
-                alert("Error in fetching IOCs");
-            }
-        }
+<script src="{% static 'dashboard.js' %}"></script>
 
-        $(document).on("click", "#testConnection", async function(){
-            const response = await AjaxCallWithoutParm("/testImapConnection");
-            if(response["status"] == 200){
-                alert("Connection established successfully");
-            }
-            else{
-                alert("Please setup IMAP properly, connection failed");
-            }
-        });
-
-    </script>
 {% endblock %}
