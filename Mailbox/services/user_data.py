@@ -103,7 +103,7 @@ def get_ioc_overview(request):
         
 
 
-        return JsonResponse({"data": ioc_list, "status": 200}, safe=False)
+        return JsonResponse({"data": ioc_list, "email_count": len(email_ids), "status": 200}, safe=False)
     except Exception as e:
         print(f"Error in get_overview: {e}")
         return HttpResponse(status=500)
@@ -162,4 +162,3 @@ def get_email_with_ioc(email_data, only_iocs=False):
         return {}
 
     return content
-        
