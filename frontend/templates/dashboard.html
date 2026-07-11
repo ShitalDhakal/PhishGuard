@@ -1,11 +1,11 @@
 <div class="row">
-    <div class="col-md-5 mt-4">
+    <div class="col-md-6 mt-3">
         <h5 class="display-6"><span id="greeting">Good Afternoon</span>, <span class="fw-bold" id="userName">Username</span></h5>
     </div>
 
-    <div class="col-md-12">
-
-    </div>
+    <div class="col-md-6 mt-4 text-end">
+        <button class="btn btn-sm btn-outline-success" id="fetchEmail"><i class="bi bi-search"></i> Fetch New Emails</button>
+    </div>  
 
     <div class="col-md-3 mt-4">
         <div class="card">
@@ -122,7 +122,7 @@
     <div class="col-md-6 mt-4">
         <div class="card">
             <div class="card-body">
-                <span class="fw-bold">Reoccuring IOCs</span>
+                <span class="fw-bold">Reoccuring IOCs (TODO)</span>
                     <div class="mt-4"></div>
                         <table class="table table-sm table-bordered table-striped table-hover">
                             <thead>
@@ -131,6 +131,7 @@
                                     <th scope="col">IOC</th>
                                     <th scope="col">Type</th>
                                     <th scope="col">Count</th>
+                                    <th scope="col">Detected At</th>
                                 </tr>
                             </thead>
                             <tbody id="reoccuringIOCs">

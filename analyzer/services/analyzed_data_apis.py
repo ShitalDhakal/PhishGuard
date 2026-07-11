@@ -7,7 +7,7 @@ from Mailbox.services.user_data import get_email_with_ioc
 from accounts.models import User
 from analyzer.models import IOC, AnalysisReport
 from analyzer.services.risk_scorer import determine_verdict
-from Mailbox.services.user_data import get_email_with_ioc
+from Mailbox.services.user_data import get_email_with_ioc, get_recurring_iocs
 
 def get_email_data_and_scores(request):
     try:
@@ -181,7 +181,12 @@ def dashboard_data(request):
 
         malicious_emails =list(IOC.objects.filter(is_malicious=True, email_ids__in=email_ids).values())
 
-        return JsonResponse({"verdict_count": verdict_count, "email_count": len(email_ids), "malicious_email_count": len(malicious_emails), "status": 200, "avg_risk_scores": avg_risk_scores, "phishing_type_count": phishing_type_count, "no_notes_count": no_notes_count, "malicious_sender_count": dict(sorted(malicious_sender_count.items(), key=lambda x: x[1], reverse=True)), "status": 200}, safe=False)
+        recurring_iocs = []
+
+        for email_id in email_ids:
+            recurring_iocs.append(get_recurring_iocs(email_id))
+
+        return JsonResponse({"verdict_count": verdict_count, "email_count": len(email_ids), "malicious_email_count": len(malicious_emails), "status": 200, "avg_risk_scores": avg_risk_scores, "phishing_type_count": phishing_type_count, "no_notes_count": no_notes_count, "malicious_sender_count": dict(sorted(malicious_sender_count.items(), key=lambda x: x[1], reverse=True)), "recurring_iocs": recurring_iocs, "status": 200}, safe=False)
     except Exception as e:
         print(f"Error in dashboard_data: {e}")
         return JsonResponse({"message": "Server error", "status": 500}, safe=False)

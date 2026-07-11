@@ -80,3 +80,13 @@ function RenderTopMaliciousSender(data){
 
     $("#topMaliciousSenders").empty().append(html);
 }
+
+$("#fetchEmail").on("click", async function(){
+    const response = await AjaxCallWithoutParm("/analyze_email/");
+    if(response.status == 200){
+        await renderDashboard();
+        toastr.success("Email fetch completed successfully.");
+    } else {
+        toastr.error("Error fetching emails. Please try again later.");
+    }
+});

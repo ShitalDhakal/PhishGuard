@@ -162,3 +162,38 @@ def get_email_with_ioc(email_data, only_iocs=False):
         return {}
 
     return content
+
+
+
+def get_recurring_iocs(email_id):
+    try:
+        iocs = list(IOC.objects.filter(
+            Q(email_ids__startswith=f"{email_id}, ")
+            | Q(email_ids__endswith=f",{email_id}")
+            | Q(email_ids__contains=f", {email_id},")
+            | Q(email_ids__exact=f"{email_id}")
+        ).values().distinct())
+
+        recurring_iocs = {
+
+        }
+        for ioc in iocs:
+            ioc_type = ioc.get("ioc_type")
+            ioc_detected_at = ioc.get("detected_at")
+            ioc_value = ioc.get("value")
+            ioc_file_hash = ioc.get("file_hash") or ""
+            ioc_count = len(ioc.get("email_ids").split(","))
+            ioc_is_malicious = ioc.get("is_malicious")
+            if(ioc_count > 1):
+                recurring_iocs[ioc_value] = {
+                    "file_hash": ioc_file_hash,
+                    "count": ioc_count,
+                    "detected_at": ioc_detected_at,
+                    "type": ioc_type
+                }
+
+
+        return recurring_iocs
+    except Exception as e:
+        print(f"Error in get_recurring_iocs: {e}")
+        return {}
