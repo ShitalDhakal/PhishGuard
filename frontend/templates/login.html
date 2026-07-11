@@ -4,86 +4,455 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>PhishGuard - Secure Login</title>
+
+    <!-- Favicon (Browser Tab Icon) -->
+    <link rel="icon" type="image/png" href="{% static 'title.png' %}">
+
+    <!-- Load styles -->
     <link rel="stylesheet" href="{% static 'library/bootstrap.css' %}" >
     <link rel="stylesheet" href="{% static 'library/toastr.css' %}" >
 
+    <!-- Load Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Load Lucide Icons (CDN) for minimal modern icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom CSS to build the Centered Glassmorphic Page -->
+    <style>
+        :root {
+            --bg-dark: #07090e;              /* Deepest space black */
+            --bg-slate: #0d121f;             /* Slightly lighter slate card background */
+            --border-color: rgba(255, 255, 255, 0.08); /* Minimal border for glass effect */
+            --accent-gold: #e0a905;          /* Vibrant brand gold matching falcon envelope */
+            --text-light: #f3f4f6;           /* Crisp off-white text */
+            --text-muted: #9ca3af;           /* Muted grey text */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--bg-dark);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* BACKGROUND GLOW EFFECT (TECH ORB) */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(241, 196, 15, 0.08) 0%, rgba(24, 34, 60, 0.2) 60%, transparent 100%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .login-wrapper {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* CENTERED CONSOLE CARD (GLASSMORPHIC) */
+        .console-card {
+            width: 100%;
+            background: rgba(13, 18, 31, 0.75); /* Semi-transparent */
+            backdrop-filter: blur(16px);        /* Frosted glass blur */
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            padding: 45px 35px 35px 35px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Circular Glow Medallion Badge */
+        .logo-box {
+            width: 150px;         /* Large visible size */
+            height: 150px;
+            /* Soft white radial glow that lets the dark eagle stand out on dark themes */
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;  /* Keeps the full falcon emblem visible */
+
+            /* Prevents dragging in Chrome, Safari, Opera and Firefox */
+            user-drag: none;
+            -webkit-user-drag: none;
+
+            /* Prevents image highlight selection */
+            user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+
+        .brand-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-light);
+            margin-bottom: 6px;
+        }
+
+        .brand-title span {
+            color: var(--accent-gold);
+        }
+
+        .brand-subtitle {
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 35px;
+            text-align: center;
+        }
+
+        /* INPUT FIELDS (ROUNDED DARK OPERATION STYLE) */
+        .input-group-custom {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+            background: rgba(7, 9, 14, 0.6); /* Slightly transparent input bg */
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            transition: all 0.25s ease;
+        }
+
+        .input-group-custom:focus-within {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 1px var(--accent-gold);
+            background: rgba(7, 9, 14, 0.9);
+        }
+
+        .input-icon {
+            color: var(--text-muted);
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        .input-group-custom input,
+        .input-group-custom select {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            background: transparent;
+        }
+
+        /* Custom Select Container */
+        .custom-select-wrapper {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        /* Dropdown Trigger Box (Matches Username/Password fields) */
+        .custom-select-trigger {
+            background: rgba(7, 9, 14, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            transition: all 0.25s ease;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .custom-select-wrapper.open .custom-select-trigger {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 1px var(--accent-gold);
+            background: rgba(7, 9, 14, 0.9);
+        }
+
+        .custom-arrow {
+            margin-left: auto;
+            width: 16px;
+            height: 16px;
+            color: var(--text-muted);
+            transition: transform 0.2s;
+        }
+
+        .custom-select-wrapper.open .custom-arrow {
+            transform: rotate(180deg); /* Flips arrow when open */
+        }
+
+        /* Floating Options List (Dropdown popup) */
+        .custom-options-list {
+            position: absolute;
+            top: 52px;
+            left: 0;
+            right: 0;
+            background: var(--bg-slate);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            z-index: 100;
+            display: none; /* Hidden by default */
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .custom-select-wrapper.open .custom-options-list {
+            display: block; /* Shows list when wrapper is open */
+        }
+
+        /* Individual Dropdown Options */
+        .custom-option {
+            padding: 12px 20px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        /* GOLD HIGHLIGHTS on Hover and Active! */
+        .custom-option:hover,
+        .custom-option.active {
+            background-color: var(--accent-gold);
+            color: var(--bg-dark);
+            font-weight: 600;
+        }
+
+        .password-toggle {
+            cursor: pointer;
+            color: var(--text-muted);
+            margin-left: 8px;
+            transition: color 0.2s;
+        }
+
+        .password-toggle:hover {
+            color: var(--text-light);
+        }
+
+        /* SUBMIT BUTTON (ROUNDED ACCENT AMBER) */
+        .btn-access {
+            width: 100%;
+            background-color: var(--accent-gold);
+            color: var(--bg-dark);
+            border: none;
+            padding: 14px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.25s;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(224, 169, 5, 0.2);
+        }
+
+        .btn-access:hover {
+            background-color: #f5b041;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(224, 169, 5, 0.35);
+        }
+
+        /* FOOTER COPYRIGHT */
+        .console-footer {
+            margin-top: 24px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-align: center;
+            letter-spacing: 0.5px;
+            line-height: 1.6;
+        }
+
+        .console-footer a {
+            color: var(--accent-gold);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-wrapper">
+
+        <!-- Main Console Card -->
+        <div class="console-card">
+            <div class="logo-box">
+                <img src="{% static 'Logo.png' %}" alt="PhishGuard Falcon Logo" draggable="false">
+            </div>
+            <h1 class="brand-title">Phish<span>Guard</span></h1>
+            <div class="brand-subtitle">Email Threat Detection & Analysis</div>
+
+            <!-- Credentials Form -->
+            <div class="input-group-custom">
+                <i data-lucide="user" class="input-icon"></i>
+                <input type="text" id="adminUsername" placeholder="Username" required autocomplete="off">
+            </div>
+
+            <div class="input-group-custom">
+                <i data-lucide="lock" class="input-icon"></i>
+                <input type="password" id="adminPwd" placeholder="Password" required>
+                <i data-lucide="eye" class="password-toggle" id="togglePasswordBtn" onclick="togglePasswordVisibility()"></i>
+            </div>
+
+            <!-- Custom Select Dropdown -->
+            <div class="custom-select-wrapper" id="roleSelectWrapper">
+                <div class="custom-select-trigger">
+                    <i data-lucide="shield-check" class="input-icon"></i>
+                    <span id="selectedRoleLabel">Employee</span>
+                    <i data-lucide="chevron-down" class="custom-arrow"></i>
+                </div>
+                <div class="custom-options-list">
+                    <div class="custom-option active" data-role="employee">Employee</div>
+                    <div class="custom-option" data-role="analyst">Analyst</div>
+                    <div class="custom-option" data-role="admin">Admin</div>
+                </div>
+                <!-- Hidden input to store value for submitAdmin() -->
+                <input type="hidden" id="roleSelection" value="employee">
+            </div>
+
+            <button class="btn-access" onclick="submitAdmin()">Access Console</button>
+        </div>
+
+        <!-- Footer -->
+        <div class="console-footer">
+            Console Version 1.0.1<br>
+            Copyright &copy; 2026 <a href="#">PhishGuard</a>
+        </div>
+
+    </div>
+
+    <!-- Load scripts -->
     <script src="{% static 'library/jquery.js' %}"></script>
     <script src="{% static 'library/boostrap.js' %}"></script>
     <script src="{% static 'library/toastr.min.js' %}"></script>
     <script src="{% static 'custom.js' %}"></script>
-</head>
-<body>
-    <div class="row">
-    <div class="card col-md-8 mx-auto mt-5 ">
-        <div class="card-body">
-            <h5 class="display-6 mb-4">Login</h5>
-            <div class="row">
-                <div class="col-md-12 mb-4">
-                    <label class="form-label p-0">Username</label>
-                    <input type="text" class="form-control form-control-sm" id="adminUsername" placeholder="Enter username" />
-                </div>
-                <div class="col-md-12 mb-4">
-                    <label class="form-label p-0">Password</label>
-                    <input type="password" class="form-control form-control-sm" id="adminPwd" placeholder="Enter password" />
-                </div>
-                <div class="col-md-12 mb-4">
-                    <label class="form-label p-0">Role</label>
-                    <select id="roleSelection" class="form-select form-select-sm">
-                        <option value="employee">Employee</option>
-                        <option value="analyst">Analyst</option>
-                        <option value="admin">Admin</option>
-                    </select>
-            </div>
-            <div class="col-md-12 mt-4 text-center">
-                <button class="btn btn-primary" onclick="submitAdmin()">Submit</button>
-            </div>
-        </div>
-    </div>
-    </div>
 
+    <script>
+        $(document).ready(async function (){
+            // Toggle custom dropdown open/close
+            $("#roleSelectWrapper").click(function(e) {
+                e.stopPropagation();
+                $(this).toggleClass("open");
+            });
+
+            // Close dropdown if clicked outside
+            $(document).click(function() {
+                $("#roleSelectWrapper").removeClass("open");
+            });
+
+            // Handle custom option selection
+            $(".custom-option").click(function() {
+                let role = $(this).attr("data-role");
+                let labelText = $(this).text();
+
+                $(".custom-option").removeClass("active");
+                $(this).addClass("active");
+
+                $("#selectedRoleLabel").text(labelText);
+                $("#roleSelection").val(role);
+            });
+
+            // Render Lucide Icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+
+            let adminCount = parseInt(await AjaxCallWithoutParm("/checkAdminCount")) || 0;
+            if(adminCount <= 0){
+                alert("No admin currently exists");
+                window.location.href = "/adminSignup";
+            }
+
+            setCookie("csrftoken", "crsftoken");
+            await AjaxCallWithoutParm("/analyze_email/");
+        });
+
+        async function submitAdmin(){
+            let username = $("#adminUsername").val();
+            let password = $("#adminPwd").val();
+            let role = $("#roleSelection").val().toLowerCase();
+
+            if(!username || !password) {
+                toastr.warning("Please fill in all fields.");
+                return;
+            }
+
+            let parm = {
+                username: username,
+                password: password,
+                role: role
+            }
+
+            let request = await AjaxCall("/userLogin/", parm);
+            toastr.info(request.message);
+            if(request.status == 200){
+                if(role == "employee"){
+                    window.location.href="/employeePage";
+                }
+                else if(role == "admin"){
+                    window.location.href = "/userList";
+                }
+                else{
+                    window.location.href = "/analystPage";
+                }
+            }
+        }
+
+        // Toggle password show/hide functionality
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById("adminPwd");
+            const toggleIcon = document.getElementById("togglePasswordBtn");
+
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                toggleIcon.setAttribute("data-lucide", "eye-off");
+            } else {
+                passwordInput.type = "password";
+                toggleIcon.setAttribute("data-lucide", "eye");
+            }
+
+            lucide.createIcons();
+        }
+
+        function setCookie(name, value, days = 7){
+            const maxDays = days * 24 * 60 * 60; // convert to seconds
+            document.cookie = `${name}=${value}; max-age=${maxDays}; path=/`;
+        }
+    </script>
 </body>
 </html>
-<script>
-    $(document).ready(async function (){
-        let adminCount = parseInt(await AjaxCallWithoutParm("/checkAdminCount")) || 0;
-        if(adminCount <= 0){
-            alert("No admin currently exists");
-            window.location.href = "/adminSignup";
-        }
-        
-        setCookie("csrftoken", "crsftoken");
-        await AjaxCallWithoutParm("/analyze_email/");
-    });
-    async function submitAdmin(){
-        let username = $("#adminUsername").val();
-        let password = $("#adminPwd").val();
-        let role = $("#roleSelection").val().toLowerCase();
-
-        let parm = {
-            username: username,
-            password: password,
-            role: role
-        }
-
-        let request = await AjaxCall("/userLogin/", parm);
-        toastr.info(request.message);
-        if(request.status == 200){
-            if(role == "employee"){
-                window.location.href="/employeePage";
-            }
-            else if(role == "admin"){
-                window.location.href = "/userList";
-            }
-            else{
-                window.location.href = "/analystPage";
-            }
-        }
-    }
-
-
-    function setCookie(name, value, days = 7){
-        const maxDays = days * 24 * 60 * 60; // convert to seconds
-        document.cookie = `${name}=${value}; max-age=${maxDays}; path=/`;
-    }
-</script>
