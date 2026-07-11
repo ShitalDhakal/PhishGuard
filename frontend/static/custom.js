@@ -76,3 +76,14 @@ const verdictBg = {
     "suspicious" : "bg-warning",
     "malicious" : "bg-danger"
 }
+
+const phishingTypeBg = {
+    "general spam" : "bg-warning",
+    "banking fraud" : "bg-danger",
+    "reward scam" : "bg-secondary",
+    "fake invoice" : "bg-primary-subtle",
+    "account suspension" : "bg-secondary-subtle",
+    "credential harvesting" : "bg-primary",
+    "delivery scam" : "bg-info",
+    "none" : "bg-success"
+}

@@ -13,9 +13,14 @@ async function getEmailData(userId){
     response.data.forEach(item => { 
 
         let verdictBadge = ``;
+        let phishingTypeBadge = ``;
 
         if(item.analyzed_data.length > 0){
+            let phishingType = item.analyzed_data[0].phising_type || "none";
+            phishingType = phishingType.toLowerCase().trim();
+
             verdictBadge = `<span class="badge ${verdictBg[item.analyzed_data[0].verdict.toLowerCase().trim()]}">${item.analyzed_data[0].verdict}</span>`;
+            phishingTypeBadge = `<span class="badge ${phishingTypeBg[phishingType]}">${item.analyzed_data[0].phising_type || "No Phishing"}</span>`; 
         }
         else{
             verdictBadge = `<span class="badge bg-secondary">Not Analyzed</span>`;
@@ -23,8 +28,11 @@ async function getEmailData(userId){
 
         emailListHtml += `<a href="#email-${item.email_data.id}" class="list-group-item list-group-item-action" data-bs-toggle="list" data-emailid="${item.email_data.id}">
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-8">
                 <strong>${item.email_data.subject}</strong>
+            </div>
+            <div class="col-md-4 text-end">
+                ${phishingTypeBadge}
             </div>
             <div class="col-md-12">
                 <small>From: ${item.email_data.sender} | To: ${item.email_data.recipient}</small>
@@ -35,6 +43,7 @@ async function getEmailData(userId){
             <div class="col-md-6">
                 ${verdictBadge}
             </div>
+
             <div class="col-md-6 text-end">
                 <span class="badge bg-info">IOC(s): ${item.iocs.length}</span>
             </div>
@@ -47,8 +56,12 @@ async function getEmailData(userId){
                     <h5 class="display-6">${item.email_data.subject}</h5>
                 </div>
                 <div class="col-md-5">
-                    <label class="form-label p-0">Risk Score: </label>
-                    <input type="text" class="form-control form-control-sm riskScoreInput" value="${item.analyzed_data.length > 0 ? item.analyzed_data[0].overall_risk_score : 'Not Analyzed'}">
+                    <label class="form-label p-0">Verdict: </label>
+                    <select class="form-select form-select-sm verdictSelect">
+                        <option value="0">Safe</option>
+                        <option value="50">Suspicious</option>
+                        <option value="100">Malicious</option>
+                    </select>
                 </div>
                 <div class="col-md-7 mt-4">
                     <button class="btn btn-sm btn-primary updateRiskScore" data-emailid="${item.email_data.id}">Update Risk Score</button>

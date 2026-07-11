@@ -112,7 +112,7 @@ def dashboard_data(request):
             "Account Suspension": 0,
             "Credential Harvesting": 0,
             "Delivery Scam": 0,
-            "Non Phishing": 0
+            "None": 0
         }
 
         malicious_sender_count = {
@@ -156,7 +156,7 @@ def dashboard_data(request):
                 case "delivery scam":
                     phishing_type_count["Delivery Scam"] += 1
                 case _:
-                    phishing_type_count["Non Phishing"] += 1
+                    phishing_type_count["None"] += 1
                 
             if(report.get("verdict").lower() == "malicious"):
                 malicious_email_count += 1
