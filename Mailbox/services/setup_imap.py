@@ -47,14 +47,27 @@ def change_mail_cred(request):
     try:
         if(request.session.get("login_user_role") == "analyst"):
             data = json.loads(request.body)
-            mail = mailbox.objects.get(address = data["address"])
-            mail.app_password = data["app_password"]
-            mail.imap_server = data["imap_server"]
-            mail.save()
-            return JsonResponse({'message': 'Changed successfully', 'status':200})
+
+            existing = mailbox.objects.first()  # Always work on the single mailbox row
+
+            if existing:
+                # Update the existing row
+                existing.address      = data["address"]
+                existing.app_password = data["app_password"]
+                existing.imap_server  = data["imap_server"]
+                existing.save()
+                return JsonResponse({'message': 'Updated successfully', 'status': 200})
+            else:
+                # No row exists yet — create one
+                mailbox.objects.create(
+                    address      = data["address"],
+                    app_password = data["app_password"],
+                    imap_server  = data["imap_server"],
+                )
+                return JsonResponse({'message': 'Created successfully', 'status': 200})
         else:
-            return JsonResponse({'message': 'Not proper role', 'status':403})
+            return JsonResponse({'message': 'Not proper role', 'status': 403})
     except Exception as e:
         print(e)
-        return JsonResponse({'message': 'Server error.', 'status':500})
+        return JsonResponse({'message': f'Server error: {str(e)}', 'status': 500})
 

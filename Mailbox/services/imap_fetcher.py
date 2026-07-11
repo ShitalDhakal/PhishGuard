@@ -17,6 +17,10 @@ def fetch_emails(request):
     # I am assuming only one mail exists 
     data = list(mailbox.objects.all().values())
 
+    if not data:
+        print("Error: No mailbox configured. Please add a mailbox via the web UI or Django shell.")
+        return JsonResponse({"message": "No mailbox configured. Please set up IMAP first.", "status": 404})
+
     username = data[0]["address"]
     password = data[0]["app_password"]
     imap_host = data[0]["imap_server"]  # We can dynamically change the IMAP host (Outlook, Gmail, Zoho) from the env file.
