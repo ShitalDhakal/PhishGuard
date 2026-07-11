@@ -7,7 +7,7 @@
 
     </div>
 
-    <div class="col-md-2 mt-4">
+    <div class="col-md-3 mt-4">
         <div class="card">
             <div class="card-body">
                 <div class="row">
@@ -23,5 +23,121 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="col-md-3 mt-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <span class="display-6 bi bi-envelope text-danger"></span>
+                    </div>
+                    <div class="col-md-12">
+                        <small class="form-label p-0">Malicious Emails(s)</small>
+                    </div>
+                    <div class="col-md-12"> 
+                        <span class="fw-bolder" id="maliciousEmailCount"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mt-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <span class="display-6 bi bi-info-circle text-warning"></span>
+                    </div>
+                    <div class="col-md-12">
+                        <small class="form-label p-0">Mean Risk Score</small>
+                    </div>
+                    <div class="col-md-12"> 
+                        <span class="fw-bolder" id="meanRiskScore"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mt-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <span class="display-6 bi bi-pen text-info"></span>
+                    </div>
+                    <div class="col-md-12">
+                        <small class="form-label p-0">Mails yet to receive analyst notes</small>
+                    </div>
+                    <div class="col-md-12"> 
+                        <span class="fw-bolder" id="analystNotesCount"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mt-4">
+        <div class="card">
+            <div class="card-body">
+                <span class="fw-bold">Phishing Type Distribution</span>
+                    <div class="mt-4" id="phishingDiv" style="min-height: 300px;">
+                    </div>
+                </div>
+            </div>
+    </div>
+
+    <div class="col-md-6 mt-4">
+        <div class="card">
+            <div class="card-body">
+                <span class="fw-bold">Verdict Bar Chart</span>
+                    <div class="mt-4" id="verdictDiv" style="min-height: 300px;">
+                    </div>
+                </div>
+            </div>
+    </div>
+
+    <div class="col-md-6 mt-4">
+        <div class="card">
+            <div class="card-body">
+                <span class="fw-bold">Top Malicious Email Senders</span>
+                    <div class="mt-4"></div>
+                        <table class="table table-sm table-bordered table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">S.No</th>
+                                    <th scope="col">Sender</th>
+                                    <th scope="col">Count</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topMaliciousSenders">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+    <div class="col-md-6 mt-4">
+        <div class="card">
+            <div class="card-body">
+                <span class="fw-bold">Reoccuring IOCs</span>
+                    <div class="mt-4"></div>
+                        <table class="table table-sm table-bordered table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">S.No</th>
+                                    <th scope="col">IOC</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col">Count</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reoccuringIOCs">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
     </div>
 </div>

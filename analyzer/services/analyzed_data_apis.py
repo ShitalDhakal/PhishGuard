@@ -7,7 +7,7 @@ from Mailbox.services.user_data import get_email_with_ioc
 from accounts.models import User
 from analyzer.models import IOC, AnalysisReport
 from analyzer.services.risk_scorer import determine_verdict
-
+from Mailbox.services.user_data import get_email_with_ioc
 
 def get_email_data_and_scores(request):
     try:
@@ -16,6 +16,10 @@ def get_email_data_and_scores(request):
             data = json.loads(request.body)
         email_list = []
         user_id = data.get("user_id")
+        verdict = data.get("verdict")
+        sender_email = data.get("sender_email")
+        date_from = data.get("date_from")
+        date_to = data.get("date_to")
         if(user_id > 0):
             user = User.objects.get(user_id=user_id)
             email_list = list(EmailRecord.objects.filter(recipient__icontains=user.email, scanned=True).values("id", "sender", "recipient", "subject", "date", "body_html", "source_folder"))
@@ -83,6 +87,8 @@ def dashboard_data(request):
             if(request.session.get('login_user_role') != 'analyst'):
                 return JsonResponse({"message": "Only analyst can fetch overview!", "status": 405}, safe=False)
             emails = EmailRecord.objects.filter(scanned=True)
+            for email in emails:
+                email_ids.append(email.id)
         
         verdict_count = {
             "Safe": 0,
@@ -109,6 +115,12 @@ def dashboard_data(request):
             "Non Phishing": 0
         }
 
+        malicious_sender_count = {
+
+        }
+
+        malicious_email_count = 0
+        no_notes_count = 0
         verdict_data = list(AnalysisReport.objects.filter(email_id_id__in=email_ids).values())
         for report in verdict_data:
             match(report.get("verdict").lower()):
@@ -126,9 +138,9 @@ def dashboard_data(request):
             avg_risk_scores["Text"] += report.get("ml_risk_score", 0)
             avg_risk_scores["Authentication"] += report.get("authentication_risk_score", 0)
 
-            phishing_type = report.get("phishing_type")
+            phishing_type = report.get("phising_type") or ""
             
-            match(phishing_type.tolower()):
+            match(phishing_type.lower()):
                 case "general spam":
                     phishing_type_count["General Spam"] += 1
                 case "banking fraud":
@@ -138,13 +150,27 @@ def dashboard_data(request):
                 case "fake invoice":
                     phishing_type_count["Fake Invoice"] += 1
                 case "account suspension":
-                    phishing_type_count["Account Suspension"] += 1
+                    phishing_type_count["Account Suspension"] += 1  
                 case "credential harvesting":
                     phishing_type_count["Credential Harvesting"] += 1
                 case "delivery scam":
                     phishing_type_count["Delivery Scam"] += 1
                 case _:
                     phishing_type_count["Non Phishing"] += 1
+                
+            if(report.get("verdict").lower() == "malicious"):
+                malicious_email_count += 1
+
+            if(report.get("notes") or "" == ""):
+                no_notes_count += 1
+
+            if(report.get("verdict").lower() in ["malicious", "suspicious"]):
+                email = EmailRecord.objects.get(id=report.get("email_id_id"))
+                sender = email.sender.replace("<", "(").replace(">", ")")
+                if(sender in malicious_sender_count):
+                    malicious_sender_count[sender] += 1
+                else:
+                    malicious_sender_count[sender] = 1
 
 
 
@@ -153,7 +179,9 @@ def dashboard_data(request):
         avg_risk_scores["Text"] = avg_risk_scores["Text"] / len(verdict_data)
         avg_risk_scores["Authentication"] = avg_risk_scores["Authentication"] / len(verdict_data)
 
-        return JsonResponse({"verdict_count": verdict_count, "email_count": len(email_ids), "status": 200, "avg_risk_scores": avg_risk_scores, "phishing_type_count": phishing_type_count}, safe=False)
+        malicious_emails =list(IOC.objects.filter(is_malicious=True, email_ids__in=email_ids).values())
+
+        return JsonResponse({"verdict_count": verdict_count, "email_count": len(email_ids), "malicious_email_count": len(malicious_emails), "status": 200, "avg_risk_scores": avg_risk_scores, "phishing_type_count": phishing_type_count, "no_notes_count": no_notes_count, "malicious_sender_count": dict(sorted(malicious_sender_count.items(), key=lambda x: x[1], reverse=True)), "status": 200}, safe=False)
     except Exception as e:
         print(f"Error in dashboard_data: {e}")
         return JsonResponse({"message": "Server error", "status": 500}, safe=False)

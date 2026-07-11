@@ -67,8 +67,8 @@ async function UserValidation(role){
 }
 
 function fixedFloat(num, decimalPlaces = 4) {
-    const number = parseFloat(num).toFixed(decimalPlaces) || 0;
-    return parseFloat(number) || 0;
+    const number = parseFloat(num) || 0;
+    return parseFloat(number).toFixed(decimalPlaces) || 0;
 }
 
 const verdictBg = {
