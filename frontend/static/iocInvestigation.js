@@ -19,7 +19,7 @@ async function getIOCData(){
                 <td>${item.value}</td>
                 <td>${String(item.is_malicious || "Unscanned")}</td>
                 <td>${item.file_hash || ""}</td>
-                <td>${item.email_ids}</td>
+                <td>${item.recurring_iocs}</td>
                 <td></td>
             </tr>
         `;

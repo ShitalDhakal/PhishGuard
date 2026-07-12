@@ -20,6 +20,7 @@ from accounts import services as accountService
 from frontend import views 
 from Mailbox.services import setup_imap, imap_fetcher, user_data
 from analyzer.services import analyze_email, analyzed_data_apis
+from Mailbox.services import user_data
 
 urlpatterns = [
     path('', views.login),

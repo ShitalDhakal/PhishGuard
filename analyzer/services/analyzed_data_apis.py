@@ -6,7 +6,7 @@ from Mailbox.models import EmailRecord
 from accounts.models import User
 from analyzer.models import IOC, AnalysisReport
 from analyzer.services.risk_scorer import determine_verdict
-from Mailbox.services.user_data import get_recurring_iocs
+from Mailbox.services.user_data import get_email_with_ioc, get_recurring_iocs
 
 def get_email_data_and_scores(request):
     try:

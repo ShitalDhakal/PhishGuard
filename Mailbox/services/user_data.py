@@ -121,6 +121,15 @@ def get_ioc_overview(request):
                 ioc_query = ioc_query.filter(is_malicious__isnull=True)
 
         final_data = list(ioc_query.values())
+        for ioc in final_data:
+            if(ioc.get("email_ids")):
+                recurring_iocs = ioc.get("email_ids").split(",")
+                ioc["recurring_iocs"] = len(recurring_iocs)
+
+        final_data.sort(
+            key = lambda x: x["recurring_iocs"],
+            reverse = True
+        )
 
         return JsonResponse({"data": final_data, "status": 200}, safe=False)
         
@@ -142,6 +151,35 @@ def get_ioc_by_email_id(id):
     except Exception as e:
         print(e)
         return {}
+    
+
+def get_email_with_ioc(email_data, only_iocs=False):
+    try:
+
+        ioc = list(IOC.objects.filter(
+            Q(email_ids__startswith=f"{email_data.get("id")}, ")
+            | Q(email_ids__endswith=f",{email_data.get("id")}")
+            | Q(email_ids__contains=f", {email_data.get("id")},")
+            | Q(email_ids__exact=f"{email_data.get("id")}")
+        ).values())
+
+        if(only_iocs):
+            return ioc
+        content = {
+            "message_id": email_data.get("message_id"),
+            "sender"   : email_data.get("sender"),
+            "recipient": email_data.get("recipient"),
+            "subject"  : email_data.get("subject"),
+            "date"   : email_data.get("date"),
+            "body" : email_data.get("body_html"),
+            "iocs" : ioc
+        }
+    except Exception as e:
+        print(e)
+        return {}
+
+    return content
+
 
 
 
