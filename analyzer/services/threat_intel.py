@@ -238,6 +238,42 @@ def check_malwarebazaar_reputation(file_hash):
     except Exception:
         return False, 0, False
 
+def check_urlhaus_reputation(url_string):
+    """
+    Queries the URLhaus API to check if a URL is distributing malware.
+    Uses the same abuse.ch API key as MalwareBazaar.
+    """
+    if not MALWAREBAZAAR_API_KEY:  # URLHaus and malwarebazar are operated by same organization so they provide common API key.
+        return False, 0, False
+
+    api_url = "https://urlhaus-api.abuse.ch/v1/url/"
+    headers = {"Auth-Key": MALWAREBAZAAR_API_KEY}
+    data = {"url": url_string}
+
+    try:
+        response = requests.post(api_url, headers=headers, data=data, timeout=10)
+        if response.status_code == 200:
+            result = response.json()
+            query_status = result.get("query_status")
+
+            if query_status == "ok":
+                # URL is listed in URLhaus as active malware host
+                url_status = result.get("url_status")
+                if url_status == "online":
+                    print(f"[URLhaus HIT] {url_string} is ONLINE distributing malware!")
+                    return True, 100, True
+                else:
+                    print(f"[URLhaus HIT] {url_string} is listed (offline).")
+                    return True, 50, True  # lower score if offline
+
+            elif query_status == "no_api_key":
+                print("[URLhaus] Key error.")
+                return False, 0, False
+
+        return False, 0, True  # Consulted but not found
+    except Exception:
+        return False, 0, False  # Network error
+
 
 # LAYER 3 — VirusTotal (Last Option for mapping)
 # Called ONLY when Layers 1 and 2 both returned nothing.
@@ -396,15 +432,25 @@ def update_email_iocs(email_record):
                 is_malicious, score = check_ip_reputation(ioc.value)
                 resolved = True
 
+
             elif ioc.ioc_type in ("url", "domain"):
-                # URLs/Domains → Google Safe Browsing (anti-phishing focused)
+                # 1. First check Google Safe Browsing
                 print(f"[GSB] Checking {ioc.ioc_type}: {ioc.value}")
                 gsb_malicious, gsb_score, gsb_found = check_gsb_reputation(ioc.value)
-                if gsb_found:
+                if gsb_found and gsb_malicious:
                     is_malicious = gsb_malicious
                     score = gsb_score
                     resolved = True
-                # gsb_found=False → network error or API issue → fall to Layer 3
+                # 2. If GSB didn't find anything, fallback to URLhaus (NEW)
+                if not resolved and ioc.ioc_type == "url":
+                    print(f"[URLhaus] Checking URL: {ioc.value}")
+                    uh_malicious, uh_score, uh_found = check_urlhaus_reputation(ioc.value)
+                    if uh_found and uh_malicious:
+                        is_malicious = uh_malicious
+                        score = uh_score
+                        resolved = True
+
+            # gsb_found=False → network error or API issue → fall to Layer 3
             elif ioc.ioc_type == "hash":
                 # Hashes → MalwareBazaar (email malware focused, unlimited)
                 print(f"[MalwareBazaar] Checking hash: {ioc.value}")
