@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from Mailbox.models import MailBox
+from django.utils import timezone
 
 load_dotenv()
 
@@ -65,3 +66,96 @@ def sendEmail(address, subject, body):
         print(f"Email sent to {address}")
     except Exception as e:
         print(f"Failed to send email: {e}")
+
+
+def send_phishing_alert(report):
+    """
+    Sends an alert email to the original recipient of a confirmed
+    phishing or suspicious email.
+
+    Called automatically by analyze_email.py after risk scoring.
+
+    Args:
+        report: AnalysisReport instance
+    """
+    email_record = report.email_id
+    to_address   = email_record.recipient
+
+    if not to_address:
+        print("[Alert] No recipient address found — skipping alert.")
+        return
+
+    # Choose subject and message based on verdict
+    if report.verdict == "Malicious":
+        subject = "🚨 PhishGuard Alert: Phishing Email Detected in Your Inbox"
+        urgency = "confirmed as PHISHING"
+        action  = "Delete it from your inbox IMMEDIATELY. Do NOT click any links or open attachments."
+        color   = "#c0392b"
+    else:  # Suspicious
+        subject = "⚠️ PhishGuard Alert: Suspicious Email Detected"
+        urgency = "flagged as SUSPICIOUS"
+        action  = "Proceed with caution. Do not click any links or open attachments until our analyst reviews it."
+        color   = "#e67e22"
+
+    body = f"""
+<html>
+  <body style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px;">
+    <div style="background:{color}; color:white; padding:15px; border-radius:6px;">
+      <h2 style="margin:0;">PhishGuard Security Alert</h2>
+    </div>
+    <div style="padding:20px; border:1px solid #ddd; margin-top:10px; border-radius:6px;">
+      <p>Hello,</p>
+      <p>An email in your inbox has been <strong>{urgency}</strong> by PhishGuard.</p>
+      <table style="width:100%; background:#f9f9f9; padding:10px; border-radius:4px; border-collapse:collapse;">
+        <tr style="border-bottom:1px solid #eee;">
+          <td style="padding:6px;"><strong>Original Subject:</strong></td>
+          <td style="padding:6px;">{email_record.subject}</td>
+        </tr>
+        <tr style="border-bottom:1px solid #eee;">
+          <td style="padding:6px;"><strong>Original From:</strong></td>
+          <td style="padding:6px;">{email_record.sender}</td>
+        </tr>
+        <tr style="border-bottom:1px solid #eee;">
+          <td style="padding:6px;"><strong>Risk Score:</strong></td>
+          <td style="padding:6px;">{report.overall_risk_score}/100</td>
+        </tr>
+        <tr>
+          <td style="padding:6px;"><strong>Verdict:</strong></td>
+          <td style="padding:6px; color:{color};"><strong>{report.verdict}</strong></td>
+        </tr>
+      </table>
+      <p style="margin-top:20px;"><strong>Action Required:</strong></p>
+      <p style="color:{color}; font-size:15px;"><strong>{action}</strong></p>
+      <p>If you believe this is a false positive, please contact your IT security team.</p>
+      <hr style="margin-top:30px; border:none; border-top:1px solid #eee;">
+      <p style="font-size:12px; color:#888;">
+        This is an automated alert from PhishGuard Email Security System.<br>
+        Do not reply to this email.
+      </p>
+    </div>
+  </body>
+</html>
+"""
+
+    mailbox = MailBox.objects.first()
+    if not mailbox:
+        print("[Alert] No mailbox configured — cannot send alert.")
+        return
+
+    try:
+        with smtplib.SMTP_SSL(mailbox.imap_server, 465) as server:
+            server.login(mailbox.address, mailbox.app_password)
+            msg = MIMEMultipart("alternative")
+            msg["From"]    = mailbox.address
+            msg["To"]      = to_address
+            msg["Subject"] = subject
+            msg.attach(MIMEText(body, "html"))
+            server.send_message(msg)
+
+        report.alert_sent    = True
+        report.alert_sent_at = timezone.now()
+        report.save(update_fields=["alert_sent", "alert_sent_at"])
+        print(f"[Alert] Sent to {to_address} — report ID {report.id}")
+
+    except Exception as e:
+        print(f"[Alert] Failed to send: {e}")

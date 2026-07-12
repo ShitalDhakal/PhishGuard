@@ -80,6 +80,10 @@ class AnalysisReport(models.Model):
     analyst_notes = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Alert tracking
+    alert_sent = models.BooleanField(default=False)
+    alert_sent_at = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         ordering = ["-created_at"] # for showing newest data
 

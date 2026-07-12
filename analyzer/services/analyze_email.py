@@ -14,7 +14,7 @@ from analyzer.services.keyword_detector import detect_keywords
 from analyzer.services.threat_intel    import update_email_iocs
 from analyzer.services.ml_classifier   import classify
 from analyzer.services.risk_scorer     import analyze_threat_risk
-
+from Mailbox.services.email_sender import send_phishing_alert
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ def analyze_email(request):
 
     fetch_emails(request)
     data = {}
-    if request.body:
+    if request and hasattr(request, 'body') and request.body:
         data = json.loads(request.body)
 
 
@@ -164,6 +164,10 @@ def analyze_email(request):
             action = "created"
         else:
             action = "updated"
+
+        # Auto-send alert for Malicious and Suspicious emails
+        if report.verdict in ("Malicious", "Suspicious") and not report.alert_sent:
+            send_phishing_alert(report)
 
         #  Mark the EmailRecord as scanned
 
