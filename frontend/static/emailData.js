@@ -14,13 +14,21 @@ async function getEmailData(userId){
 
         let verdictBadge = ``;
         let phishingTypeBadge = ``;
+        
+        // Initialize badge for tracking if an alert email was sent
+        let alertBadge = ``;
 
         if(item.analyzed_data.length > 0){
             let phishingType = item.analyzed_data[0].phising_type || "none";
             phishingType = phishingType.toLowerCase().trim();
 
             verdictBadge = `<span class="badge ${verdictBg[item.analyzed_data[0].verdict.toLowerCase().trim()]}">${item.analyzed_data[0].verdict}</span>`;
-            phishingTypeBadge = `<span class="badge ${phishingTypeBg[phishingType]}">${item.analyzed_data[0].phising_type || "No Phishing"}</span>`; 
+            phishingTypeBadge = `<span class="badge ${phishingTypeBg[phishingType]}">${item.analyzed_data[0].phising_type || "No Phishing"}</span>`;
+            
+            // If the alert was sent, show a green "Alert Sent" badge in the list
+            if (item.analyzed_data[0].alert_sent) {
+                alertBadge = `<span class="badge bg-success ms-1">Alert Sent</span>`;
+            }
         }
         else{
             verdictBadge = `<span class="badge bg-secondary">Not Analyzed</span>`;
@@ -41,7 +49,8 @@ async function getEmailData(userId){
                 <small>Date: ${item.email_data.date}</small>
             </div>
             <div class="col-md-6">
-                ${verdictBadge}
+                <!-- Render the verdict badge and the alert badge side by side -->
+                ${verdictBadge} ${alertBadge}
             </div>
 
             <div class="col-md-6 text-end">
@@ -50,10 +59,27 @@ async function getEmailData(userId){
         </div>
         </a>`;
 
+        // Define what status message to show in the email details view
+        let alertStatusHtml = `<span class="text-muted">No alert policy for safe emails</span>`;
+        if (item.analyzed_data.length > 0) {
+            const report = item.analyzed_data[0];
+            if (report.alert_sent) {
+                const sentTime = new Date(report.alert_sent_at).toLocaleString();
+                alertStatusHtml = `<span class="text-success"><strong>✔ Alert Sent</strong> to employee at ${sentTime}</span>`;
+            } else if (report.verdict === "Malicious" || report.verdict === "Suspicious") {
+                alertStatusHtml = `<span class="text-danger"><strong>⚠️ Alert Pending/Failed</strong></span>`;
+            }
+        }
+
         emailContentHtml += `<div class="tab-pane" id="email-${item.email_data.id}" role="tabpanel">
             <div class="row">
                 <div class="col-md-12">
                     <h5 class="display-6">${item.email_data.subject}</h5>
+                </div>
+                <!-- Render the Alert Status details block -->
+                <div class="col-md-12 mb-3">
+                    <label class="form-label p-0"><strong>Alert Status:</strong></label>
+                    <div>${alertStatusHtml}</div>
                 </div>
                 <div class="col-md-5">
                     <label class="form-label p-0">Verdict: </label>
