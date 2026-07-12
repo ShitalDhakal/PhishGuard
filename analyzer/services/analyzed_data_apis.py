@@ -57,6 +57,7 @@ def update_risk_score(request):
             data = json.loads(request.body)
             email_id = data.get("email_id")
             risk_score = data.get("risk_score")
+            analyst_notes = data.get("analyst_notes", "")
             if not email_id:
                 return JsonResponse({"message": "Email ID is required", "status": 400}, safe=False)
 
@@ -64,6 +65,7 @@ def update_risk_score(request):
             # Update the risk score in the AnalysisReport
             analysis_report = AnalysisReport.objects.get(email_id_id=email_id)
             analysis_report.overall_risk_score = risk_score
+            analysis_report.analyst_notes = analyst_notes
             analysis_report.verdict = determine_verdict(risk_score)
             analysis_report.save()
 
