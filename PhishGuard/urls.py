@@ -46,7 +46,7 @@ urlpatterns = [
     path('get_ioc_overview/', user_data.get_ioc_overview),
     path('userList/', views.userList),
     path('delete_user/', accountService.delete_user),
-    path('get_email_overview/', user_data.get_email_overview),
+    # path('get_email_overview/', user_data.get_email_overview),
     path('email_data/', views.email_data),
     path('analyze_email/', analyze_email.analyze_email),
     path('get_email_data_and_scores/', analyzed_data_apis.get_email_data_and_scores),

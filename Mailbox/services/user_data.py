@@ -74,95 +74,74 @@ def load_ioc_all(request):
     except Exception as e:
         print(f"Error in load_ioc: {e}")
         return HttpResponse(status=500)
-    
+
 def get_ioc_overview(request):
     try:
         data = {}
-        if(request.body):
+        if request.body:
             data = json.loads(request.body)
 
-        email_ids = []
-        ioc_list = []
-        emails = []
-        if(data.get('email')):
-            emails = EmailRecord.objects.filter(recipient__icontains=data.get('email'), scanned=True)
+        ioc_query = IOC.objects.all()
 
+        if data.get("email") and data.get("email") != "all":
+            email_ids = EmailRecord.objects.filter(
+                recipient__icontains=data.get("email"), 
+                scanned=True
+            ).values_list("id", flat=True)
+
+            email_q_filters = Q()
+            for e_id in email_ids:
+                email_q_filters |= (
+                    Q(email_ids__startswith=f"{e_id}, ")
+                    | Q(email_ids__endswith=f",{e_id}")
+                    | Q(email_ids__contains=f", {e_id},")
+                    | Q(email_ids__exact=f"{e_id}")
+                )
+            
+            if email_ids:
+                ioc_query = ioc_query.filter(email_q_filters)
+            else:
+                ioc_query = ioc_query.none()
         else:
-            if(request.session.get('login_user_role') != 'analyst'):
-                return JsonResponse({"message": "Only analyst can fetch overview!", "status": 405}, safe=False)
-            emails = EmailRecord.objects.filter(scanned=True)
+            if request.session.get('login_user_role') != 'analyst':
+                return JsonResponse({"message": "Only analyst can fetch all IOCs!", "status": 405}, safe=False)
 
+        if data.get("ioc_type"):
+            ioc_query = ioc_query.filter(ioc_type__icontains=data.get("ioc_type"))
+            
+        if data.get("search_text"):
+            ioc_query = ioc_query.filter(value__icontains=data.get("search_text"))
 
-        for email in emails:
-            email_ids.append(email.id)
+        if data.get("verdict"):
+            if data.get("verdict") == "malicious":
+                ioc_query = ioc_query.filter(is_malicious=True)
+            elif data.get("verdict") == "safe":
+                ioc_query = ioc_query.filter(is_malicious=False)
+            else:
+                ioc_query = ioc_query.filter(is_malicious__isnull=True)
 
-        iocs = list(IOC.objects.filter(email_ids__in=email_ids, ioc_type__icontains=data.get('ioc_type'), value__icontains=data.get('search_text')).values())
-        for ioc in iocs:
-            email_id_array = [int(num) for num in ioc['email_ids'].split(",")]
-            if any(email_id in email_ids for email_id in email_id_array):
-                ioc_list.append(ioc)
+        final_data = list(ioc_query.values())
+
+        return JsonResponse({"data": final_data, "status": 200}, safe=False)
         
-
-
-        return JsonResponse({"data": ioc_list, "email_count": len(email_ids), "status": 200}, safe=False)
     except Exception as e:
-        print(f"Error in get_overview: {e}")
+        print(f"Error in get_ioc_overview: {e}")
         return HttpResponse(status=500)
-    
-def get_email_overview(request):
-    try:
-        data = {}
-        email_content = []
-        email_list = []
-        if(request.body):
-            data = json.loads(request.body)
 
-
-        if(data.get('email')):
-            email_list = list(EmailRecord.objects.filter(recipient__icontains=data.get('email'), scanned=True).values())
-
-        else:
-            if(request.session.get('login_user_role') != 'analyst'):
-                return JsonResponse({"message": "Only analyst can fetch overview!", "status": 405}, safe=False)
-            email_list = list(EmailRecord.objects.filter(scanned=True).values())
-
-        
-        for individual_email in email_list:
-            content = get_email_with_ioc(individual_email)
-            email_content.append(content)
-
-        return JsonResponse({"data": email_content, "status": 200}, safe=False)
-    
-    except Exception as e:
-        print(e)
-        return JsonResponse({"message":"Error", "status": 500})
-
-def get_email_with_ioc(email_data, only_iocs=False):
+def get_ioc_by_email_id(id):
     try:
 
-        ioc = list(IOC.objects.filter(
-            Q(email_ids__startswith=f"{email_data.get("id")}, ")
-            | Q(email_ids__endswith=f",{email_data.get("id")}")
-            | Q(email_ids__contains=f", {email_data.get("id")},")
-            | Q(email_ids__exact=f"{email_data.get("id")}")
-        ).values())
+        ioc = IOC.objects.filter(
+            Q(email_ids__startswith=f"{id}, ")
+            | Q(email_ids__endswith=f",{id}")
+            | Q(email_ids__contains=f", {id},")
+            | Q(email_ids__exact=f"{id}")
+        )
 
-        if(only_iocs):
-            return ioc
-        content = {
-            "message_id": email_data.get("message_id"),
-            "sender"   : email_data.get("sender"),
-            "recipient": email_data.get("recipient"),
-            "subject"  : email_data.get("subject"),
-            "date"   : email_data.get("date"),
-            "body" : email_data.get("body_html"),
-            "iocs" : ioc
-        }
+        return ioc
     except Exception as e:
         print(e)
         return {}
-
-    return content
 
 
 
