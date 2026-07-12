@@ -14,7 +14,7 @@ from analyzer.services.keyword_detector import detect_keywords
 from analyzer.services.threat_intel    import update_email_iocs
 from analyzer.services.ml_classifier   import classify
 from analyzer.services.risk_scorer     import analyze_threat_risk
-from Mailbox.services.email_sender import send_phishing_alert
+from Mailbox.services.email_sender import send_phishing_alert, sendEmail
 
 logger = logging.getLogger(__name__)
 
@@ -166,8 +166,45 @@ def analyze_email(request):
             action = "updated"
 
         # Auto-send alert for Malicious and Suspicious emails
-        if report.verdict in ("Malicious", "Suspicious") and not report.alert_sent:
-            send_phishing_alert(report)
+        if report.verdict.lower() in ("malicious") and not report.alert_sent:
+            content = f"""
+                        <html>
+                        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px;">
+                            <div style="background:#c0392b; color:white; padding:15px; border-radius:6px;">
+                            <h2 style="margin:0;">PhshGuard Security Alert</h2>
+                            </div>
+                            <div style="padding:20px; border:1px solid #ddd; margin-top:10px; border-radius:6px;">
+                            <p>Hello,</p>
+                            <p>An email in your inbox has been <strong>Flagged as phishing</strong> by PhishGuard.</p>
+                            <table style="width:100%; background:#f9f9f9; padding:10px; border-radius:4px; border-collapse:collapse;">
+                                <tr style="border-bottom:1px solid #eee;">
+                                <td style="padding:6px;"><strong>Original Subject:</strong></td>
+                                <td style="padding:6px;">{parsed_data.subject}</td>
+                                </tr>
+                                <tr style="border-bottom:1px solid #eee;">
+                                <td style="padding:6px;"><strong>Original From:</strong></td>
+                                <td style="padding:6px;">{parsed_data.sender}</td>
+                                </tr>
+                                <tr style="border-bottom:1px solid #eee;">
+                                <td style="padding:6px;"><strong>Risk Score:</strong></td>
+                                <td style="padding:6px;">{report.overall_risk_score}/100</td>
+                                </tr>
+                                <tr>
+                                <td style="padding:6px;"><strong>Verdict:</strong></td>
+                                <td style="padding:6px; color:#c0392b;"><strong>{report.verdict}</strong></td>
+                                </tr>
+                            </table>
+                            <p>If you believe this is a false positive, please contact your IT security team.</p>
+                            <hr style="margin-top:30px; border:none; border-top:1px solid #eee;">
+                            <p style="font-size:12px; color:#888;">
+                                This is an automated alert from PhishGuard Email Security System.<br>
+                                Do not reply to this email.
+                            </p>
+                            </div>
+                        </body>
+                        </html>
+                        """
+            sendEmail(report.email_id.recipient, "🚨 PhishGuard Alert: Phishing Email Detected in Your Inbox", content)
 
         #  Mark the EmailRecord as scanned
 
