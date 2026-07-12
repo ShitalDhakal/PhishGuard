@@ -1,6 +1,8 @@
+from datetime import date, datetime
 import logging
 
 import json
+from time import timezone
 
 from django.http import JsonResponse
 from Mailbox.models import EmailRecord
@@ -179,11 +181,11 @@ def analyze_email(request):
                             <table style="width:100%; background:#f9f9f9; padding:10px; border-radius:4px; border-collapse:collapse;">
                                 <tr style="border-bottom:1px solid #eee;">
                                 <td style="padding:6px;"><strong>Original Subject:</strong></td>
-                                <td style="padding:6px;">{parsed_data.subject}</td>
+                                <td style="padding:6px;">{parsed_data.get("subject")}</td>
                                 </tr>
                                 <tr style="border-bottom:1px solid #eee;">
                                 <td style="padding:6px;"><strong>Original From:</strong></td>
-                                <td style="padding:6px;">{parsed_data.sender}</td>
+                                <td style="padding:6px;">{parsed_data.get("sender")}</td>
                                 </tr>
                                 <tr style="border-bottom:1px solid #eee;">
                                 <td style="padding:6px;"><strong>Risk Score:</strong></td>
@@ -205,6 +207,9 @@ def analyze_email(request):
                         </html>
                         """
             sendEmail(report.email_id.recipient, "🚨 PhishGuard Alert: Phishing Email Detected in Your Inbox", content)
+            report.alert_sent = True
+            
+            report.save(update_fields=["alert_sent", "alert_sent_at"])
 
         #  Mark the EmailRecord as scanned
 

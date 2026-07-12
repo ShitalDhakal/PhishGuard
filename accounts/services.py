@@ -56,7 +56,7 @@ def userLogin(request):
             
         except Exception as e:
             print(f"Error: {e}")
-            return JsonResponse({"message":"Server error", "status":500})
+            return JsonResponse({"message":"Wrong Credentials", "status":500})
     else:
         return JsonResponse({"message":"Method not allowed!", "status":403})
 
@@ -129,3 +129,20 @@ def delete_user(request):
     
 def getCurrentRole(request):
     return JsonResponse({"role": request.session.get('login_user_role')}, safe=False)
+
+def getCurrentUserInfo(request):
+    user_id = request.session.get('login_user_id')
+    if not user_id:
+        return JsonResponse({'id': 0, 'error': 'User not logged in!'}, status=401)
+    
+    try:
+        user = modelUser.objects.get(user_id=user_id)
+        data = {
+            'username': user.username,
+            'email': user.email,
+            'role': user.role,
+            'user_id': user.user_id
+        }
+        return JsonResponse(data, safe=False)
+    except modelUser.DoesNotExist:
+        return JsonResponse({'message': 'User not found!'}, status=404)

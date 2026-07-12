@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 from Mailbox.models import EmailRecord
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -82,10 +84,20 @@ class AnalysisReport(models.Model):
 
     # Alert tracking
     alert_sent = models.BooleanField(default=False)
-    alert_sent_at = models.DateTimeField(null=True, blank=True)
+    alert_sent_at = models.DateTimeField(null=True, blank=True, default=datetime.datetime.now)  # Use current time as default if not provided
 
     class Meta:
         ordering = ["-created_at"] # for showing newest data
 
     def __str__(self):
         return f"Analysis Report for Email ID: {self.email_id.id} - Verdict: {self.verdict}, Classification: {self.classification}"
+
+class ApiKeys(models.Model):
+
+    abuseipdb_key = models.CharField(max_length=255, null=True, blank=True)
+    virustotal_key = models.CharField(max_length=255, null=True, blank=True)
+    malwarebazaar_key = models.CharField(max_length=255, null=True, blank=True)
+    google_safe_browsing_key = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return "API Keys for Threat Intelligence Services"

@@ -3,7 +3,18 @@ $(document).ready(async function(){
 });
 
 async function renderDashboard(){
-    const response = await AjaxCallWithoutParm("/dashboard_data/");
+    let response = {}
+    if(window.location.pathname == "/analystPage/"){
+        response = await AjaxCallWithoutParm("/dashboard_data/");
+    }
+    else{
+        const userData = await AjaxCallWithoutParm("/getCurrentUserInfo/");
+        const parm = {
+            email: userData.email
+        }
+        response = await AjaxCall("/dashboard_data/", parm);
+        $("#malReceiveDiv").hide();
+    }
     $("#emailCount").text(response.email_count);
     $("#maliciousEmailCount").text(response.malicious_email_count);
     $("#meanRiskScore").text(fixedFloat(response.avg_risk_scores.Overall));
@@ -11,6 +22,7 @@ async function renderDashboard(){
     RenderPhishingPie(response.phishing_type_count);
     RenderBarChart(response.verdict_count);
     RenderTopMaliciousSender(response.malicious_sender_count);
+    RenderTopMaliciousReceiver(response.top_mal_receiver_count);
 }
 
 function RenderPhishingPie(data){
@@ -79,6 +91,23 @@ function RenderTopMaliciousSender(data){
     }
 
     $("#topMaliciousSenders").empty().append(html);
+}
+
+function RenderTopMaliciousReceiver(data){
+    let html = ``;
+    let index = 0;
+    for(const [key, value] of Object.entries(data)) {
+        html += `
+            <tr>
+                <td class="ps-3">${index + 1}</td>
+                <td class="ps-3">${key}</td>
+                <td class="ps-3">${value}</td>
+            </tr>
+        `;
+        index++;
+    }
+
+    $("#topMaliciousReceivers").empty().append(html);
 }
 
 $("#fetchEmail").on("click", async function(){

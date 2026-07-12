@@ -2,13 +2,13 @@ import os
 import time  # Use for VirusTotal, Waits for 15 seconds, to avoid rate limiting
 import base64  # URLs to be Base64 URL-safe encoded before querying them
 import requests
-from analyzer.models import IOC
+from analyzer.models import IOC, ApiKeys
 
 # Load API keys from environment
-ABUSEIPDB_API_KEY = os.getenv("ABUSEIPDB_API_KEY")
-GOOGLE_SAFE_BROWSING_API_KEY = os.getenv("GOOGLE_SAFE_BROWSING_API_KEY")
-MALWAREBAZAAR_API_KEY        = os.getenv("MALWAREBAZAAR_API_KEY")
-VIRUSTOTAL_API_KEY           = os.getenv("VIRUSTOTAL_API_KEY")
+ABUSEIPDB_API_KEY            = ApiKeys.objects.first().abuseipdb_key
+GOOGLE_SAFE_BROWSING_API_KEY = ApiKeys.objects.first().google_safe_browsing_key
+MALWAREBAZAAR_API_KEY        = ApiKeys.objects.first().malwarebazaar_key
+VIRUSTOTAL_API_KEY           = ApiKeys.objects.first().virustotal_key
 
 
 

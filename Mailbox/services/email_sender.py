@@ -1,5 +1,9 @@
+from email import encoders
+from email.mime.base import MIMEBase
+import json
 import smtplib
 import os
+from django.http import JsonResponse
 from dotenv import load_dotenv
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -51,7 +55,28 @@ msg["From"] = spoofed_from
 msg["To"] = RECIPIENT_EMAIL
 msg["Subject"] = subject
 
-def sendEmail(address, subject, body):
+
+def sendEmail_Api(request):
+    try:
+        data = {}
+        if request.body:
+            data = json.loads(request.body)
+        address = data.get("address")
+        subject = data.get("subject")
+        body = data.get("body")
+        send_file = data.get("send_file", False)
+        file_path = None
+        if(send_file):
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            file_path = os.path.join(current_dir, "eicar.txt")
+
+        sendEmail(address, subject, body, file_path)
+        return JsonResponse({"message": f"Email sent to {address}", "status": 200}, safe=False)
+    except Exception as e:
+        print(f"Error in sendEmail_Api: {e}")
+        return JsonResponse({"message": "Server error", "status": 500}, safe=False)
+
+def sendEmail(address, subject, body, file_path=None):
     
     mailbox = MailBox.objects.first()
     try:
@@ -62,6 +87,21 @@ def sendEmail(address, subject, body):
             msg['To'] = address
             msg['Subject'] = subject
             msg.attach(MIMEText(body, 'plain'))
+            if file_path and os.path.exists(file_path):
+                with open(file_path, "rb") as attachment:
+                    part = MIMEBase("application", "octet-stream")
+                    part.set_payload(attachment.read())
+
+                encoders.encode_base64(part)
+                filename = os.path.basename(file_path)
+                part.add_header(
+                    "Content-Disposition", f"attachment; filename= {filename}"
+                )
+                msg.attach(part)
+            elif file_path:
+                print(
+                    f"Warning: Specified file not found at {file_path}. Sending email without attachment."
+                )
             server.send_message(msg)
         print(f"Email sent to {address}")
     except Exception as e:
@@ -87,7 +127,7 @@ def send_phishing_alert(report):
 
     # Choose subject and message based on verdict
     if report.verdict == "Malicious":
-        subject = "🚨 PhishGuard Alert: Phishing Email Detected in Your Inbox"
+        subject = "PhishGuard Alert: Phishing Email Detected in Your Inbox"
         urgency = "confirmed as PHISHING"
         action  = "Delete it from your inbox IMMEDIATELY. Do NOT click any links or open attachments."
         color   = "#c0392b"
@@ -153,7 +193,7 @@ def send_phishing_alert(report):
             server.send_message(msg)
 
         report.alert_sent    = True
-        report.alert_sent_at = timezone.now()
+        report.alert_sent_at = report.created_at if report.created_at else timezone.now()
         report.save(update_fields=["alert_sent", "alert_sent_at"])
         print(f"[Alert] Sent to {to_address} — report ID {report.id}")
 

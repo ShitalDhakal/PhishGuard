@@ -1,14 +1,24 @@
 $(document).ready(async function(){
+    if(window.location.pathname === "/emp_ioc_overview/"){
+        $("#emailDiv").hide();
+    }
     await RenderUserFilter();
     await getIOCData();
+
+
 });
 
 async function getIOCData(){
+    let emailAddress = $("#userFilter").val();
+    if(window.location.pathname === "/emp_ioc_overview/"){
+        const response = await AjaxCallWithoutParm("/getCurrentUserInfo/");
+        emailAddress = response.email;
+    }
     const parm ={
         ioc_type: $("#ioc_type").val(),
         verdict: $("#ioc_verdict").val(),
         search_text: $("#ioc_search_text").val(),
-        email: $("#userFilter").val()
+        email: emailAddress
     }
     const response = await AjaxCall("/get_ioc_overview/", parm);
     let tableHtml = ``;

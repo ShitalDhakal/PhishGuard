@@ -47,3 +47,15 @@ def email_data(request):
 
 def analyst_ioc_investigation(request):
     return render(request, "analyst/analyst_ioc_investigation.html")
+
+def analyst_account_manage(request):
+    return render(request, "analyst/analyst_account_manage.html")
+
+def email_data_emp(request):
+    return render(request, "employee/email_data_emp.html")
+
+def emp_ioc_overview(request):
+    return render(request, "employee/emp_ioc_overview.html")
+
+def emp_account_manage(request):
+    return render(request, "employee/emp_account_manage.html")

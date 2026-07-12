@@ -3,7 +3,7 @@ import json
 from urllib import response
 from django.http import HttpResponse, JsonResponse
 
-from analyzer.models import IOC
+from analyzer.models import IOC, ApiKeys
 from Mailbox.models import EmailRecord, MailBox
 from analyzer.services.email_parser import parse_email
 from analyzer.services.ioc_extractor import extract_iocs, save_iocs
@@ -235,4 +235,49 @@ def get_mail_cred(request):
             return JsonResponse({"message": "No mailbox credentials found.", "status": 404}, safe=False)
     except Exception as e:
         print(f"Error in get_mail_cred: {e}")
+        return HttpResponse(status=500)
+    
+def insert_update_api_key(request):
+    try:
+        if request.session.get('login_user_role') != 'analyst':
+            return JsonResponse({"message": "Only analyst can update API keys!", "status": 405}, safe=False)
+        else:
+            data = {}
+            if request.body:
+                data = json.loads(request.body)
+            abuseipdb_key = data.get("abuseipdb_key")
+            virustotal_key = data.get("virustotal_key")
+            malwarebazaar_key = data.get("malwarebazaar_key")
+            google_safe_browsing_key = data.get("google_safe_browsing_key")
+
+            api_keys, created = ApiKeys.objects.get_or_create(id=1)
+            api_keys.abuseipdb_key = abuseipdb_key
+            api_keys.virustotal_key = virustotal_key
+            api_keys.malwarebazaar_key = malwarebazaar_key
+            api_keys.google_safe_browsing_key = google_safe_browsing_key
+            api_keys.save()
+
+            return JsonResponse({"message": "API keys updated successfully.", "status": 200}, safe=False)
+    except Exception as e:
+        print(f"Error in insert_update_api_key: {e}")
+        return HttpResponse(status=500)
+    
+def get_api_keys(request):
+    try:
+        if request.session.get('login_user_role') != 'analyst':
+            return JsonResponse({"message": "Only analyst can fetch API keys!", "status": 405}, safe=False)
+        else:
+            api_keys = ApiKeys.objects.first()
+            if api_keys:
+                data = {
+                    "abuseipdb_key": api_keys.abuseipdb_key,
+                    "virustotal_key": api_keys.virustotal_key,
+                    "malwarebazaar_key": api_keys.malwarebazaar_key,
+                    "google_safe_browsing_key": api_keys.google_safe_browsing_key
+                }
+                return JsonResponse({"data": data, "status": 200}, safe=False)
+            else:
+                return JsonResponse({"message": "No API keys found.", "status": 404}, safe=False)
+    except Exception as e:
+        print(f"Error in get_api_keys: {e}")
         return HttpResponse(status=500)

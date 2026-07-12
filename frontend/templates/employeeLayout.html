@@ -6,9 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Layout</title>
     <link rel="stylesheet" href="{% static 'library/bootstrap.css' %}" >
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" >
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" >
+    <link rel="stylesheet" href="{% static 'library/sidebars.css' %}" >
+    <link rel="stylesheet" href="{% static 'library/toastr.css' %}" >
+    <link rel="stylesheet" href="{% static 'extraFeatures.css' %}" >
+
     <script src="{% static 'library/jquery.js' %}"></script>
     <script src="{% static 'library/bootstrap.js' %}"></script>
+    <script src="{% static 'library/echarts.min.js' %}"></script>
+    <script src="{% static 'library/toastr.min.js' %}"></script>
     <script src="{% static 'custom.js' %}"></script>
     <script src="{% static 'employee.js' %}"></script>
 
@@ -20,7 +26,7 @@
         style="width: 280px"
       >
         <a
-          href="/"
+          href="/employeePage"
           class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none"
         >
           <svg
@@ -37,17 +43,26 @@
         <ul class="nav nav-pills flex-column mb-auto">
           <li>
             <a href="/employeePage" class="nav-link link-body-emphasis">
-              <svg
-                class="bi pe-none me-2"
-                width="16"
-                height="16"
-                aria-hidden="true"
-              >
-                <use xlink:href="#speedometer2"></use>
-              </svg>
+              <i class="bi bi-activity"></i>
               Dashboard
             </a>
           </li>
+          <li>
+            <a href="/email_data_emp" class="nav-link link-body-emphasis">
+              <i class="bi bi-envelope"></i> Email Data
+            </a>
+          </li>
+          <li>
+            <a href="/emp_ioc_overview" class="nav-link link-body-emphasis">
+              <i class="bi bi-exclamation-diamond"></i> IOC Investigation
+            </a>
+          </li>
+          <li>
+            <a href="/emp_account_manage" class="nav-link link-body-emphasis">
+              <i class="bi bi-person"></i> Account Configuration
+            </a>
+          </li>
+        </ul>
       </div>
 
       <div class="flex-grow-1 p-4" style="overflow-y: auto;">
@@ -56,5 +71,8 @@
             {% endblock %}
       </div>
 
+
+      {% block scripts %}
+      {% endblock %}
 </body>
 </html>

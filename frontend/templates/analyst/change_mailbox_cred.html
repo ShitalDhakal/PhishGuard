@@ -29,11 +29,46 @@
 
     </div>  
 
+    <div class="row mt-5">
+        <div class="col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="form-label p-0">Google Safe Browsing API Key</label>
+                            <input type="password" class="form-control form-control-sm" id="google_api_key" />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label p-0">AbuseIPDB API Key</label>
+                            <input type = "password" class="form-control form-control-sm" id="abuseipdb_api_key" />
+
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label p-0">MalwareBazaar API Key</label>
+                            <input type = "password" class="form-control form-control-sm" id="malwarebazaar_api_key" />
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label p-0">VirusTotal API Key</label>
+                            <input type = "password" class="form-control form-control-sm" id="virustotal_api_key" />
+                        </div>
+                        <div class="col-md-12 text-end mt-3">
+                            <button class="btn btn-sm btn-primary" id="updateApiKeys">Update API Keys</button>
+                        </div> 
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>  
+
 
     <script>
         $(document).ready(async function(){
             $("#changeMailboxCred").hide();
             await getMailboxCred();
+            await getApiKeys();
         });
 
         $("#applyBtn").on("click", async function(){
@@ -55,6 +90,27 @@
                 $("#mailbox_email").val(response.data.address);
                 $("#mailbox_pwd").val(response.data.app_password);
                 $("#imap_server").val(response.data.imap_server);
+            }
+        }
+
+        $("#updateApiKeys").on("click", async function(){
+            const parm = {
+                google_safe_browsing_key: $("#google_api_key").val(),
+                abuseipdb_key: $("#abuseipdb_api_key").val(),
+                malwarebazaar_key: $("#malwarebazaar_api_key").val(),
+                virustotal_key: $("#virustotal_api_key").val()
+            }
+            const response = await AjaxCall("/insert_update_api_key/", parm);
+            toastr.info(response.message)
+        });
+
+        async function getApiKeys(){
+            const response = await AjaxCallWithoutParm("/get_api_keys/");
+            if(response.status == 200){
+                $("#google_api_key").val(response.data.google_safe_browsing_key);
+                $("#abuseipdb_api_key").val(response.data.abuseipdb_key);
+                $("#malwarebazaar_api_key").val(response.data.malwarebazaar_key);
+                $("#virustotal_api_key").val(response.data.virustotal_key);
             }
         }
     </script>

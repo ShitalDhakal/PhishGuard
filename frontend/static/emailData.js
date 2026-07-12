@@ -1,5 +1,9 @@
 $(document).ready(async function(){
+    if(window.location.pathname === "/email_data_emp/"){
+        $("#emailDiv").hide();
+    }
     await RenderUserFilter();
+
 });
 
 async function getEmailData(userId){
@@ -16,6 +20,13 @@ async function getEmailData(userId){
 
         let verdictBadge = ``;
         let phishingTypeBadge = ``;
+
+        let disabledOnEmployee = "";
+        let hiddenOnEmployee = "";
+        if(window.location.pathname === "/email_data_emp/"){
+            disabledOnEmployee = "disabled";
+            hiddenOnEmployee = "d-none";
+        }
         
         // Initialize badge for tracking if an alert email was sent
         let alertBadge = ``;
@@ -67,7 +78,7 @@ async function getEmailData(userId){
             const report = item.analyzed_data[0];
             if (report.alert_sent) {
                 const sentTime = new Date(report.alert_sent_at).toLocaleString();
-                alertStatusHtml = `<span class="text-success"><strong>✔ Alert Sent</strong> to employee at ${sentTime}</span>`;
+                alertStatusHtml = `<span class="text-success"><strong>✔ Alert Sent</strong></span>`;
             } else if (report.verdict === "Malicious" || report.verdict === "Suspicious") {
                 alertStatusHtml = `<span class="text-danger"><strong>⚠️ Alert Pending/Failed</strong></span>`;
             }
@@ -85,7 +96,7 @@ async function getEmailData(userId){
                 </div>
                 <div class="col-md-6">
                     <label class="form-label p-0">Verdict: </label>
-                    <select class="form-select form-select-sm verdictSelect">
+                    <select class="form-select form-select-sm verdictSelect" ${disabledOnEmployee}>
                         <option value="0" ${item.analyzed_data.length > 0 && item.analyzed_data[0].verdict.toLowerCase().trim() === "safe" ? "selected" : ""}>Safe</option>
                         <option value="50" ${item.analyzed_data.length > 0 && item.analyzed_data[0].verdict.toLowerCase().trim() === "suspicious" ? "selected" : ""}>Suspicious</option>
                         <option value="100" ${item.analyzed_data.length > 0 && item.analyzed_data[0].verdict.toLowerCase().trim() === "malicious" ? "selected" : ""}>Malicious</option>
@@ -93,9 +104,9 @@ async function getEmailData(userId){
                 </div>
                 <div class="col-md-6">
                     <label class="form-label p-0">Analyst Notes: </label>
-                    <input class="form-control form-control-sm analystNotes" type="text" value="${item.analyzed_data.length > 0 ? item.analyzed_data[0].analyst_notes || "" : ""}" >
+                    <input class="form-control form-control-sm analystNotes" type="text" value="${item.analyzed_data.length > 0 ? item.analyzed_data[0].analyst_notes || "" : ""}" ${disabledOnEmployee}>
                 </div>
-                <div class="col-md-7 mt-4">
+                <div class="col-md-7 mt-4 ${hiddenOnEmployee}" >
                     <button class="btn btn-sm btn-primary updateRiskScore" data-emailid="${item.email_data.id}">Update Risk Score</button>
                 </div>
                 <div class="col-md-12 mt-2">
@@ -173,7 +184,16 @@ async function RenderUserFilter(){
 }
 
 $("#filterBtn").on("click", async function(){
-    await getEmailData($("#userFilter").val());
+
+    if(window.location.pathname === "/email_data_emp/"){
+        const response = await AjaxCallWithoutParm("/getCurrentUserInfo/");
+        const currentUserId = response.user_id;
+        await getEmailData(currentUserId);
+        $("#emailDiv").hide();
+    }
+    else{
+        await getEmailData($("#userFilter").val());
+    }
 });
 
 $(document).on("click", ".updateRiskScore", async function(){

@@ -20,7 +20,7 @@ from accounts import services as accountService
 from frontend import views 
 from Mailbox.services import setup_imap, imap_fetcher, user_data
 from analyzer.services import analyze_email, analyzed_data_apis
-from Mailbox.services import user_data
+from Mailbox.services import user_data, email_sender
 
 urlpatterns = [
     path('', views.login),
@@ -54,5 +54,13 @@ urlpatterns = [
     path('update_risk_score/', analyzed_data_apis.update_risk_score),
     path('dashboard_data/', analyzed_data_apis.dashboard_data),
     path('analyst_ioc_investigation/', views.analyst_ioc_investigation),
-    path('get_mail_cred/', user_data.get_mail_cred)
+    path('get_mail_cred/', user_data.get_mail_cred),
+    path('insert_update_api_key/', user_data.insert_update_api_key),
+    path('get_api_keys/', user_data.get_api_keys),
+    path('sendEmail_Api/', email_sender.sendEmail_Api),
+    path('analyst_account_manage/', views.analyst_account_manage),
+    path('getCurrentUserInfo/', accountService.getCurrentUserInfo),
+    path('email_data_emp/', views.email_data_emp),
+    path('emp_ioc_overview/', views.emp_ioc_overview),
+    path('emp_account_manage/', views.emp_account_manage)
 ]

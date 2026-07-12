@@ -6,19 +6,52 @@
     <title>Document</title>
 </head>
 <body>
-        <input type="text" id="oldUsername" class="form-control form-control-sm" placeholder="Enter old username" />
-        <input type="password" id="oldpassword" class="form-control form-control-sm" placeholder="Enter old password" />
-        <input type="text" id="oldEmail" class="form-control form-control-sm" placeholder="Enter old email" />
-        <input type="password" id="newUsername" class="form-control form-control-sm" placeholder="Enter new username" />
-        <input type="password" id="newpassword" class="form-control form-control-sm" placeholder="Enter new password" />
-        <input type="text" id="newemail" class="form-control form-control-sm" placeholder="Enter new email" />
-        <select id="roleSelection">
-            <option value="employee">Employee</option>
-            <option value="analyst">Analyst</option>
-            <option value="admin">Admin</option>
-        </select>
-        {% csrf_token %}
-        <button onclick="submitInfo()">Update</button>
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="form-label p-0">Current Username</label>
+                            <input type="text" class="form-control form-control-sm" id="oldUsername" />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label p-0">Current Email</label>
+                            <input type = "text" class="form-control form-control-sm" id="oldEmail" />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label p-0">Current Password</label>
+                            <input type = "password" class="form-control form-control-sm" id="oldpassword" />
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label p-0">New Username</label>
+                            <input type = "text" class="form-control form-control-sm" id="newUsername" />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label p-0">New Email</label>
+                            <input type = "text" class="form-control form-control-sm" id="newemail" />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label p-0">New Password</label>
+                            <input type = "password" class="form-control form-control-sm" id="newpassword" />
+                        </div>
+                        <div class="col-md-12 d-none">
+                            <label class="form-label p-0">Role</label>
+                            <select class="form-select form-select-sm" id="roleSelection">
+                                <option value="employee">Employee</option>
+                                <option value="analyst">Analyst</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12 text-end mt-3">
+                            <button class="btn btn-sm btn-primary" id="updateBtn">Update</button>
+                        </div> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
 
@@ -27,9 +60,15 @@
 
 
 <script>
+
+    $(document).ready(async function(){
+        await getCurrentUserInfo();
+    });
+
     async function submitInfo(){
 
         const parm = {
+            userId : parseInt($("#updateBtn").attr("data-id")) || 0,
             oldUsername : $("#oldUsername").val().trim(),
             oldEmail : $("#oldEmail").val().trim(),
             newUsername : $("#newUsername").val().trim(),
@@ -41,11 +80,22 @@
 
         const response = await AjaxCall("/change_user_cred/", parm);
         if(response.status == 200){
-            alert("Credentails changed successfully!");
-            window.location.href = "/";
+            toastr.success("Credentails changed successfully!");
         }
         else{
-            alert(response.message);
+            toastr.error(response.message);
         }
+    }
+
+    $("#updateBtn").on("click", async function(){
+        await submitInfo();
+    });
+
+    async function getCurrentUserInfo(){
+        const response = await AjaxCallWithoutParm("/getCurrentUserInfo/");
+        $("#oldUsername").val(response.username);
+        $("#oldEmail").val(response.email);
+        $("#roleSelection").val(response.role);
+        $("#updateBtn").attr("data-id", response.user_id);
     }
 </script>

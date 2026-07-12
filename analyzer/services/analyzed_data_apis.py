@@ -128,6 +128,10 @@ def dashboard_data(request):
 
         }
 
+        malicious_receivers_count = {
+        
+        }
+
         malicious_email_count = 0
         no_notes_count = 0
         verdict_data = list(AnalysisReport.objects.filter(email_id_id__in=email_ids).values())
@@ -181,6 +185,12 @@ def dashboard_data(request):
                 else:
                     malicious_sender_count[sender] = 1
 
+                receiver = email.recipient.replace("<", "(").replace(">", ")")
+                if(receiver in malicious_receivers_count):
+                    malicious_receivers_count[receiver] += 1
+                else:
+                    malicious_receivers_count[receiver] = 1
+
 
 
         avg_risk_scores["Overall"] = avg_risk_scores["Overall"] / len(verdict_data)
@@ -190,12 +200,8 @@ def dashboard_data(request):
 
         malicious_emails =list(IOC.objects.filter(is_malicious=True, email_ids__in=email_ids).values())
 
-        recurring_iocs = []
 
-        for email_id in email_ids:
-            recurring_iocs.append(get_recurring_iocs(email_id))
-
-        return JsonResponse({"verdict_count": verdict_count, "email_count": len(email_ids), "malicious_email_count": len(malicious_emails), "status": 200, "avg_risk_scores": avg_risk_scores, "phishing_type_count": phishing_type_count, "no_notes_count": no_notes_count, "malicious_sender_count": dict(sorted(malicious_sender_count.items(), key=lambda x: x[1], reverse=True)), "recurring_iocs": recurring_iocs, "status": 200}, safe=False)
+        return JsonResponse({"verdict_count": verdict_count, "email_count": len(email_ids), "malicious_email_count": len(malicious_emails), "status": 200, "avg_risk_scores": avg_risk_scores, "phishing_type_count": phishing_type_count, "no_notes_count": no_notes_count, "malicious_sender_count": dict(sorted(malicious_sender_count.items(), key=lambda x: x[1], reverse=True)), "top_mal_receiver_count": dict(sorted(malicious_receivers_count.items(), key=lambda x: x[1], reverse=True)), "status": 200}, safe=False)
     except Exception as e:
         print(f"Error in dashboard_data: {e}")
         return JsonResponse({"message": "Server error", "status": 500}, safe=False)
