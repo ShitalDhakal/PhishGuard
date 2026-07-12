@@ -2,28 +2,38 @@
 
 {% block content %}
     <div class="row">
-        <div class="col-md-4">
-            <label class="form-label p-0">Email</label>
-            <input class="form-control form-control-sm" id="mailbox_email" />
-        </div>
-        <div class="col-md-4">
-            <label class="form-label p-0">App password</label>
-            <input type = "password" class="form-control form-control-sm" id="mailbox_pwd" />
+        <div class="col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="form-label p-0">Email</label>
+                            <input class="form-control form-control-sm" id="mailbox_email" />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label p-0">App password</label>
+                            <input type = "password" class="form-control form-control-sm" id="mailbox_pwd" />
 
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label p-0">Imap Server</label>
+                            <input type = "text" class="form-control form-control-sm" id="imap_server" />
+                        </div>
+                        <div class="col-md-12 text-end mt-3">
+                            <button class="btn btn-sm btn-primary" id="applyBtn">Apply</button>
+                        </div> 
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col-md-4">
-            <label class="form-label p-0">Imap Server</label>
-            <input type = "text" class="form-control form-control-sm" id="imap_server" />
-        </div>
-        <div class="col-md-12 text-end">
-            <button class="btn btn-sm btn-primary" id="applyBtn">Apply</button>
-        </div> 
+
     </div>  
 
 
     <script>
-        $(document).ready(function(){
+        $(document).ready(async function(){
             $("#changeMailboxCred").hide();
+            await getMailboxCred();
         });
 
         $("#applyBtn").on("click", async function(){
@@ -33,11 +43,20 @@
                 imap_server: $("#imap_server").val()
             }
             const response = await AjaxCall("/change_mail_cred/", parm);
-            alert(response.message)
+            toastr.info(response.message)
             if(response.status == 200){
                 window.location.href = "/analystPage";
             }
         });
+
+        async function getMailboxCred(){
+            const response = await AjaxCallWithoutParm("/get_mail_cred/");
+            if(response.status == 200){
+                $("#mailbox_email").val(response.data.address);
+                $("#mailbox_pwd").val(response.data.app_password);
+                $("#imap_server").val(response.data.imap_server);
+            }
+        }
     </script>
 
 {% endblock %}

@@ -4,7 +4,9 @@ $(document).ready(async function(){
 
 async function getEmailData(userId){
     const parm = {
-        user_id: parseInt(userId) || 0
+        user_id: parseInt(userId) || 0,
+        verdict: $("#verdictFilter").val() || "",
+        phishing_type: $("#phishingTypeFilter").val() || ""
     }
     const response = await AjaxCall("/get_email_data_and_scores/", parm);
 
@@ -126,7 +128,7 @@ async function getEmailData(userId){
                 </div>
                 <div class="col-md-12 mt-2">
                     <label class="form-label p-0">IOC(s): </label>
-                    <table class="table table-sm table-bordered ioc-table">
+                    <table class="table table-sm table-bordered table-fixed ioc-table">
                         <thead>
                             <tr>
                                 <th>IOC</th>
@@ -138,9 +140,9 @@ async function getEmailData(userId){
                         <tbody>
                             ${item.iocs.map(ioc => `
                                 <tr>
-                                    <td>${ioc.value}</td>
+                                    <td class="copyTextOnClick text-truncate" role="button">${ioc.value}</td>
                                     <td>${ioc.ioc_type}</td>
-                                    <td>${ioc.file_hash || ""}</td>
+                                    <td class="copyTextOnClick text-truncate" role="button">${ioc.file_hash || ""}</td>
                                     <td>${ioc.is_malicious}</td>
                                 </tr>
                             `).join('')}

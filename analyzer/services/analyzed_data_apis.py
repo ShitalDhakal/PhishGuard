@@ -1,4 +1,5 @@
 import json
+import re
 from unittest import case
 from django.db.models import Q
 from django.http import JsonResponse
@@ -7,6 +8,7 @@ from accounts.models import User
 from analyzer.models import IOC, AnalysisReport
 from analyzer.services.risk_scorer import determine_verdict
 from Mailbox.services.user_data import get_email_with_ioc, get_recurring_iocs
+from analyzer.services.keyword_detector import PHISHING_KEYWORDS
 
 def get_email_data_and_scores(request):
     try:
@@ -16,9 +18,12 @@ def get_email_data_and_scores(request):
         email_list = []
         user_id = data.get("user_id")
         verdict = data.get("verdict")
-        sender_email = data.get("sender_email")
-        date_from = data.get("date_from")
-        date_to = data.get("date_to")
+        phishing_type = data.get("phishing_type")
+
+        all_sus_keywords = []
+        for category, config in PHISHING_KEYWORDS.items():
+            all_sus_keywords.extend(config["words"])
+
         if(user_id > 0):
             user = User.objects.get(user_id=user_id)
             email_list = list(EmailRecord.objects.filter(recipient__icontains=user.email, scanned=True).values("id", "sender", "recipient", "subject", "date", "body_html", "source_folder"))
@@ -30,7 +35,10 @@ def get_email_data_and_scores(request):
         analyzed_data_list = []
 
         for email_record in email_list:
-            analyzed_data = list(AnalysisReport.objects.filter(email_id_id=email_record.get("id")).values())
+            analyzed_data = list(AnalysisReport.objects.filter(email_id_id=email_record.get("id"), verdict__icontains=verdict, phising_type__icontains=phishing_type).values())
+
+            email_record["subject"] = highlight_words(email_record.get("subject", ""), all_sus_keywords)
+            email_record["body_html"] = highlight_words(email_record.get("body_html", ""), all_sus_keywords)
 
             iocs = get_email_with_ioc(email_record, only_iocs=True)
             data = {
@@ -191,3 +199,18 @@ def dashboard_data(request):
     except Exception as e:
         print(f"Error in dashboard_data: {e}")
         return JsonResponse({"message": "Server error", "status": 500}, safe=False)
+
+def highlight_words(text, words_to_highlight, tag="mark"):
+    if not words_to_highlight:
+        return text
+    if not text:
+        return text
+    # Escape words to handle special characters, then join with OR (|)
+    # \b ensures we match whole words only
+    pattern = r'\b(' + '|'.join(re.escape(word) for word in words_to_highlight) + r')\b'
+    
+    # Use HTML tags for highlighting (default is <mark>)
+    replacement = f"<{tag}>\\1</{tag}>"
+    
+    # re.IGNORECASE makes it match regardless of capitalization
+    return re.sub(pattern, replacement, text, flags=re.IGNORECASE)

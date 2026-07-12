@@ -85,5 +85,15 @@ const phishingTypeBg = {
     "account suspension" : "bg-secondary-subtle",
     "credential harvesting" : "bg-primary",
     "delivery scam" : "bg-info",
+    "general phishing" : "bg-warning-subtle",
     "none" : "bg-success"
 }
+
+$(document).on("click", ".copyTextOnClick", function(){
+    const value = $(this).text().trim();
+    navigator.clipboard.writeText(value).then(() => {
+        toastr.success("Copied to clipboard");
+    }).catch(err => {
+        toastr.error("Failed to copy text");
+    });
+});

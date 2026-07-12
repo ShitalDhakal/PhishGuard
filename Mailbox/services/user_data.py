@@ -1,12 +1,14 @@
 import email
 import json
+from urllib import response
 from django.http import HttpResponse, JsonResponse
 
 from analyzer.models import IOC
-from Mailbox.models import EmailRecord
+from Mailbox.models import EmailRecord, MailBox
 from analyzer.services.email_parser import parse_email
 from analyzer.services.ioc_extractor import extract_iocs, save_iocs
 from django.db.models import Q
+
 
 def fetch_ioc(request):
     try:
@@ -215,3 +217,22 @@ def get_recurring_iocs(email_id):
     except Exception as e:
         print(f"Error in get_recurring_iocs: {e}")
         return {}
+
+def get_mail_cred(request):
+    try:
+        cred = MailBox.objects.first()
+
+        if (request.session.get('login_user_role') != 'analyst'):
+            return JsonResponse({"message": "Only analyst can fetch mailbox credentials!", "status": 405}, safe=False)
+        if cred:
+            data = {
+                "address": cred.address,
+                "app_password": cred.app_password,
+                "imap_server": cred.imap_server
+            }
+            return JsonResponse({"data": data, "status": 200}, safe=False)
+        else:
+            return JsonResponse({"message": "No mailbox credentials found.", "status": 404}, safe=False)
+    except Exception as e:
+        print(f"Error in get_mail_cred: {e}")
+        return HttpResponse(status=500)

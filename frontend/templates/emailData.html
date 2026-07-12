@@ -5,6 +5,32 @@
    
         </select>
     </div>
+    <div class="col-md-2">
+        <label class="form-label p-0">Verdict:</label>
+        <select class="form-select form-select-sm" id="verdictFilter">
+            <option value="">All</option>
+            <option value="safe">Safe</option>
+            <option value="suspicious">Suspicious</option>
+            <option value="malicious">Malicious</option>
+        </select>
+    </div>
+    
+    <div class="col-md-2">
+        <label class="form-label p-0">Phishing Type:</label>
+        <select class="form-select form-select-sm" id="phishingTypeFilter">
+            <option value="">All</option>
+            <option value="general spam">General Spam</option>
+            <option value="general phishing">General Phishing</option>
+            <option value="banking fraud">Banking Fraud</option>
+            <option value="reward scam">Reward Scam</option>
+            <option value="fake invoice">Fake Invoice</option>
+            <option value="account suspension">Account Suspension</option>
+            <option value="credential harvesting">Credential Harvesting</option>
+            <option value="delivery scam">Delivery Scam</option>
+            <option value="none">None</option>
+        </select>
+    </div>
+
 
     <div class="col-md-2 text-end mt-4">
         <button class="btn btn-sm btn-primary" id="filterBtn">Filter</button>

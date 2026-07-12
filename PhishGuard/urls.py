@@ -53,5 +53,6 @@ urlpatterns = [
     path('get_email_data_and_scores/', analyzed_data_apis.get_email_data_and_scores),
     path('update_risk_score/', analyzed_data_apis.update_risk_score),
     path('dashboard_data/', analyzed_data_apis.dashboard_data),
-    path('analyst_ioc_investigation/', views.analyst_ioc_investigation)
+    path('analyst_ioc_investigation/', views.analyst_ioc_investigation),
+    path('get_mail_cred/', user_data.get_mail_cred)
 ]

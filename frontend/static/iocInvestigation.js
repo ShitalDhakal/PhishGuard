@@ -16,11 +16,10 @@ async function getIOCData(){
         tableHtml += `
             <tr>
                 <td>${item.ioc_type}</td>
-                <td>${item.value}</td>
-                <td>${String(item.is_malicious || "Unscanned")}</td>
-                <td>${item.file_hash || ""}</td>
+                <td class="text-truncate copyTextOnClick" role="button">${item.value}</td>
+                <td>${String(item.is_malicious) == "null" ? "Unscanned" : String(item.is_malicious)}</td>
+                <td class="text-truncate copyTextOnClick" role="button">${item.file_hash || ""}</td>
                 <td>${item.recurring_iocs}</td>
-                <td></td>
             </tr>
         `;
     });
