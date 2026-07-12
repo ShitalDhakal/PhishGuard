@@ -81,16 +81,48 @@ async function getEmailData(userId){
                     <label class="form-label p-0"><strong>Alert Status:</strong></label>
                     <div>${alertStatusHtml}</div>
                 </div>
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <label class="form-label p-0">Verdict: </label>
                     <select class="form-select form-select-sm verdictSelect">
-                        <option value="0">Safe</option>
-                        <option value="50">Suspicious</option>
-                        <option value="100">Malicious</option>
+                        <option value="0" ${item.analyzed_data.length > 0 && item.analyzed_data[0].verdict.toLowerCase().trim() === "safe" ? "selected" : ""}>Safe</option>
+                        <option value="50" ${item.analyzed_data.length > 0 && item.analyzed_data[0].verdict.toLowerCase().trim() === "suspicious" ? "selected" : ""}>Suspicious</option>
+                        <option value="100" ${item.analyzed_data.length > 0 && item.analyzed_data[0].verdict.toLowerCase().trim() === "malicious" ? "selected" : ""}>Malicious</option>
                     </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label p-0">Analyst Notes: </label>
+                    <input class="form-control form-control-sm analystNotes" type="text" value="${item.analyzed_data.length > 0 ? item.analyzed_data[0].analyst_notes || "" : ""}" >
                 </div>
                 <div class="col-md-7 mt-4">
                     <button class="btn btn-sm btn-primary updateRiskScore" data-emailid="${item.email_data.id}">Update Risk Score</button>
+                </div>
+                <div class="col-md-12 mt-2">
+                    <label class="form-label p-0">Risk Scores(s): </label>
+                    <table class="table table-sm table-bordered ioc-table">
+                        <thead>
+                            <tr>
+                                <th>ML Body Text Score</th>
+                                <th>IOC Risk Score</th>
+                                <th>Authentication Risk Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                ${item.analyzed_data.length > 0 ? 
+                                    `
+                                    <td>${item.analyzed_data[0].ml_risk_score}</td>
+                                    <td>${item.analyzed_data[0].ioc_risk_score}</td>
+                                    <td>${item.analyzed_data[0].authentication_risk_score}</td>
+                                    `
+                                    :
+                                    `
+                                    <td colspan="3">Not Analyzed</td>
+                                    `
+                                } 
+                            </tr>
+                            </td>
+                        </tbody>
+                    </table>
                 </div>
                 <div class="col-md-12 mt-2">
                     <label class="form-label p-0">IOC(s): </label>
@@ -145,7 +177,8 @@ $("#filterBtn").on("click", async function(){
 $(document).on("click", ".updateRiskScore", async function(){
     const parm = {
         email_id: parseInt($(this).attr("data-emailid")) || 0,
-        risk_score: parseFloat($(this).parents(".tab-pane").find(".riskScoreInput").val()) || 0
+     risk_score: parseInt($(this).parents(".tab-pane").find(".verdictSelect").val()) || 0,
+        analyst_notes: $(this).parents(".tab-pane").find(".analystNotes").val() || ""
     }
     const response = await AjaxCall("/update_risk_score/", parm);
     if(response.status == 200){

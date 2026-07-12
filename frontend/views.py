@@ -44,3 +44,6 @@ def userList(request):
 
 def email_data(request):
     return render(request, "analyst/emailData.html")
+
+def analyst_ioc_investigation(request):
+    return render(request, "analyst/analyst_ioc_investigation.html")

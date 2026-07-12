@@ -83,19 +83,20 @@ def get_ioc_overview(request):
 
         email_ids = []
         ioc_list = []
-
+        emails = []
         if(data.get('email')):
             emails = EmailRecord.objects.filter(recipient__icontains=data.get('email'), scanned=True)
-            for email in emails:
-                email_ids.append(email.id)
+
         else:
             if(request.session.get('login_user_role') != 'analyst'):
                 return JsonResponse({"message": "Only analyst can fetch overview!", "status": 405}, safe=False)
             emails = EmailRecord.objects.filter(scanned=True)
-            for email in emails:
-                email_ids.append(email.id)
 
-        iocs = list(IOC.objects.filter(email_ids__in=email_ids).values())
+
+        for email in emails:
+            email_ids.append(email.id)
+
+        iocs = list(IOC.objects.filter(email_ids__in=email_ids, ioc_type__icontains=data.get('ioc_type'), value__icontains=data.get('search_text')).values())
         for ioc in iocs:
             email_id_array = [int(num) for num in ioc['email_ids'].split(",")]
             if any(email_id in email_ids for email_id in email_id_array):
