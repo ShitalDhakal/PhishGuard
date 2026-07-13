@@ -70,11 +70,46 @@ def sendEmail_Api(request):
             current_dir = os.path.dirname(os.path.abspath(__file__))
             file_path = os.path.join(current_dir, "eicar.txt")
 
-        sendEmail(address, subject, body, file_path)
+        if(data.get("imap_server")):
+            sendEmail(data.get("imap_server"), data("mail_address"), data("app_password"), address, subject, body, file_path)
+        else:
+            sendEmail(address, subject, body, file_path)
         return JsonResponse({"message": f"Email sent to {address}", "status": 200}, safe=False)
     except Exception as e:
         print(f"Error in sendEmail_Api: {e}")
         return JsonResponse({"message": "Server error", "status": 500}, safe=False)
+
+
+def sendEmail(imap_server, mail_address, app_password,address, subject, body, file_path=None):
+    
+    mailbox = MailBox.objects.first()
+    try:
+        with smtplib.SMTP_SSL(imap_server, 465) as server:
+            server.login(mail_address, app_password)
+            msg = MIMEMultipart()
+            msg['From'] = mailbox.address
+            msg['To'] = address
+            msg['Subject'] = subject
+            msg.attach(MIMEText(body, 'plain'))
+            if file_path and os.path.exists(file_path):
+                with open(file_path, "rb") as attachment:
+                    part = MIMEBase("application", "octet-stream")
+                    part.set_payload(attachment.read())
+
+                encoders.encode_base64(part)
+                filename = os.path.basename(file_path)
+                part.add_header(
+                    "Content-Disposition", f"attachment; filename= {filename}"
+                )
+                msg.attach(part)
+            elif file_path:
+                print(
+                    f"Warning: Specified file not found at {file_path}. Sending email without attachment."
+                )
+            server.send_message(msg)
+        print(f"Email sent to {address}")
+    except Exception as e:
+        print(f"Failed to send email: {e}")
 
 def sendEmail(address, subject, body, file_path=None):
     
