@@ -17,3 +17,9 @@ class User(models.Model):
     
     def __str__(self):
         return self.username
+    
+class EsewaPayment(models.Model):
+    is_paid = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Payment {self.payment_id} - User: {self.user.username} - Amount: {self.amount} - Status: {self.status}"

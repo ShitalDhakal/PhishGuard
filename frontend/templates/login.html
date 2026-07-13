@@ -399,6 +399,7 @@
             }
 
             setCookie("csrftoken", "crsftoken");
+            await needForPayment();
             await AjaxCallWithoutParm("/analyze_email/");
         });
 
@@ -452,6 +453,13 @@
         function setCookie(name, value, days = 7){
             const maxDays = days * 24 * 60 * 60; // convert to seconds
             document.cookie = `${name}=${value}; max-age=${maxDays}; path=/`;
+        }
+
+        async function needForPayment(){
+            const response = await AjaxCallWithoutParm("/checkNeedForPayment/");
+            if(response.needPayment){
+                window.location.href = "/initiate_esewa_payment";
+            }
         }
     </script>
 </body>

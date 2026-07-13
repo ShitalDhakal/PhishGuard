@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from Mailbox.services.email_sender import sendEmail
+from accounts.models import EsewaPayment
 import json
 
 def get_admin_count():
@@ -146,3 +147,20 @@ def getCurrentUserInfo(request):
         return JsonResponse(data, safe=False)
     except modelUser.DoesNotExist:
         return JsonResponse({'message': 'User not found!'}, status=404)
+    
+def checkNeedForPayment(request):
+    users = list(modelUser.objects.values())
+    if(len(users) > 3):
+        hasPaid = EsewaPayment.objects.filter(is_paid=True).exists()
+        if not hasPaid:
+            return JsonResponse({"needPayment": True}, safe=False)
+        else:
+            return JsonResponse({"needPayment": False}, safe=False)
+
+    else:
+        return JsonResponse({"needPayment": False}, safe=False)
+
+def setStatusPaid(request):
+    payment_record, created = EsewaPayment.objects.get_or_create(id=1)
+    payment_record.is_paid = True
+    payment_record.save()

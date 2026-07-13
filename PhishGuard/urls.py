@@ -62,5 +62,10 @@ urlpatterns = [
     path('getCurrentUserInfo/', accountService.getCurrentUserInfo),
     path('email_data_emp/', views.email_data_emp),
     path('emp_ioc_overview/', views.emp_ioc_overview),
-    path('emp_account_manage/', views.emp_account_manage)
+    path('emp_account_manage/', views.emp_account_manage),
+    path('initiate_esewa_payment/', views.initiate_esewa_payment),
+    path('checkNeedForPayment/', accountService.checkNeedForPayment),
+    path('setStatusPaid/', accountService.setStatusPaid),
+    path('payment_success/', views.payment_success) 
+
 ]
