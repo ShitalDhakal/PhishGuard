@@ -35,7 +35,7 @@ def get_email_data_and_scores(request):
         analyzed_data_list = []
 
         for email_record in email_list:
-            analyzed_data = list(AnalysisReport.objects.filter(email_id_id=email_record.get("id"), verdict__icontains=verdict, phising_type__icontains=phishing_type).values())
+            analyzed_data = list(AnalysisReport.objects.filter(email_id_id=email_record.get("id"), verdict__icontains=verdict).values())
 
             email_record["subject"] = highlight_words(email_record.get("subject", ""), all_sus_keywords)
             email_record["body_html"] = highlight_words(email_record.get("body_html", ""), all_sus_keywords)

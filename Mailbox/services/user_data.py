@@ -160,7 +160,7 @@ def get_email_with_ioc(email_data, only_iocs=False):
 
         ioc = list(IOC.objects.filter(
             Q(email_ids__startswith=f"{email_data.get("id")}, ")
-            | Q(email_ids__endswith=f",{email_data.get("id")}")
+            | Q(email_ids__endswith=f", {email_data.get("id")}")
             | Q(email_ids__contains=f", {email_data.get("id")},")
             | Q(email_ids__exact=f"{email_data.get("id")}")
         ).values())

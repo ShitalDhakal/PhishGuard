@@ -161,7 +161,7 @@ async function getEmailData(userId){
                     </table>
                 </div>
                 <div class="col-md-12">
-                    ${item.email_data.body_html}
+                    ${item.email_data.body_html || ""}
                 </div>
 
             </div>
