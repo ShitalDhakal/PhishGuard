@@ -170,43 +170,12 @@ def analyze_email(request):
         # Auto-send alert for Malicious and Suspicious emails
         if report.verdict.lower() in ("malicious") and not report.alert_sent:
             content = f"""
-                        <html>
-                        <body style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px;">
-                            <div style="background:#c0392b; color:white; padding:15px; border-radius:6px;">
-                            <h2 style="margin:0;">PhshGuard Security Alert</h2>
-                            </div>
-                            <div style="padding:20px; border:1px solid #ddd; margin-top:10px; border-radius:6px;">
-                            <p>Hello,</p>
-                            <p>An email in your inbox has been <strong>Flagged as phishing</strong> by PhishGuard.</p>
-                            <table style="width:100%; background:#f9f9f9; padding:10px; border-radius:4px; border-collapse:collapse;">
-                                <tr style="border-bottom:1px solid #eee;">
-                                <td style="padding:6px;"><strong>Original Subject:</strong></td>
-                                <td style="padding:6px;">{parsed_data.get("subject")}</td>
-                                </tr>
-                                <tr style="border-bottom:1px solid #eee;">
-                                <td style="padding:6px;"><strong>Original From:</strong></td>
-                                <td style="padding:6px;">{parsed_data.get("sender")}</td>
-                                </tr>
-                                <tr style="border-bottom:1px solid #eee;">
-                                <td style="padding:6px;"><strong>Risk Score:</strong></td>
-                                <td style="padding:6px;">{report.overall_risk_score}/100</td>
-                                </tr>
-                                <tr>
-                                <td style="padding:6px;"><strong>Verdict:</strong></td>
-                                <td style="padding:6px; color:#c0392b;"><strong>{report.verdict}</strong></td>
-                                </tr>
-                            </table>
-                            <p>If you believe this is a false positive, please contact your IT security team.</p>
-                            <hr style="margin-top:30px; border:none; border-top:1px solid #eee;">
-                            <p style="font-size:12px; color:#888;">
-                                This is an automated alert from PhishGuard Email Security System.<br>
-                                Do not reply to this email.
-                            </p>
-                            </div>
-                        </body>
-                        </html>
+                            Subject: {parsed_data.get("subject")}
+                            Original Sender: {parsed_data.get("sender")}
+                            Risk Score: {report.overall_risk_score}
+                            Verdict: {report.verdict}
                         """
-            sendEmail(report.email_id.recipient, "🚨 PhishGuard Alert: Phishing Email Detected in Your Inbox", content)
+            sendEmail(report.email_id.recipient, "PhishGuard Alert: Phishing Email Detected in Your Inbox", content)
             report.alert_sent = True
             
             report.save(update_fields=["alert_sent", "alert_sent_at"])
