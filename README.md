@@ -1,1 +1,1 @@
-# project-duo
+# PhishGuard
