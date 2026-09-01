@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 # 🛡️ PhishGuard
 
@@ -413,9 +413,19 @@ PhishGuard integrates with the following external threat intelligence services:
 
 ---
 
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m "Add your feature"`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
+
+---
+
 ## License
 
-This project is developed as part of an academic project.
+This project is developed as part of an academic 6th Semester project.
 
 ---
 
@@ -435,4 +445,4 @@ This project is developed as part of an academic project.
 **Built with ❤️ for safer email communication**
 
 </div>
-]]>
+
