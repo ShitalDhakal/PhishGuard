@@ -75,37 +75,8 @@ When a malicious email is detected, PhishGuard automatically sends alert notific
 
 ## System Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         PhishGuard System                          │
-├─────────────┬───────────────────────────────────┬───────────────────┤
-│  Frontend   │        Django Backend             │   External APIs   │
-│  (Templates)│                                   │                   │
-│             │  ┌─────────────────────────────┐  │  ┌─────────────┐ │
-│  Login      │  │     Mailbox App              │  │  │ VirusTotal  │ │
-│  Admin UI   │  │  • IMAP Fetcher              │  │  │ AbuseIPDB   │ │
-│  Analyst UI │  │  • Email Sender              │  │  │ Google SB   │ │
-│  Employee UI│  │  • Setup & Config            │  │  │ MalwareBzr  │ │
-│             │  └────────────┬────────────────┘  │  └──────┬──────┘ │
-│             │               │                   │         │        │
-│             │  ┌────────────▼────────────────┐  │         │        │
-│             │  │     Analyzer App             │  │         │        │
-│             │  │  • Email Parser              │◄─┼─────────┘        │
-│             │  │  • Header Analyzer           │  │                  │
-│             │  │  • IOC Extractor             │  │                  │
-│             │  │  • Keyword Detector          │  │  ┌────────────┐ │
-│             │  │  • Threat Intelligence       │  │  │ PostgreSQL │ │
-│             │  │  • ML Classifier             │  │  │            │ │
-│             │  │  • Risk Scorer               │  │  │ EmailRecord│ │
-│             │  └────────────┬────────────────┘  │  │ IOC        │ │
-│             │               │                   │  │ Report     │ │
-│             │  ┌────────────▼────────────────┐  │  │ User       │ │
-│             │  │     Accounts App             │  │  │ MailBox    │ │
-│             │  │  • User Auth & RBAC         │  │  │ ApiKeys    │ │
-│             │  │  • Session Management       │  │  └────────────┘ │
-│             │  └─────────────────────────────┘  │                  │
-└─────────────┴───────────────────────────────────┴──────────────────┘
-```
+![Uploading image.png…]()
+
 
 ---
 
