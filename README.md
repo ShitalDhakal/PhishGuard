@@ -1,5 +1,3 @@
-
-
 # 🛡️ PhishGuard
 
 ### AI-Powered Email Phishing Detection & Analysis System
@@ -75,7 +73,9 @@ When a malicious email is detected, PhishGuard automatically sends alert notific
 
 ## System Architecture
 
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/d5c0096b-40f4-4556-bde4-aed3802453af" /><div align="center">
+<div align="center">
+  <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/d5c0096b-40f4-4556-bde4-aed3802453af" />
+</div>
 
 ---
 
@@ -408,11 +408,4 @@ This project is developed as part of an academic project.
 - [AbuseIPDB](https://www.abuseipdb.com/) — IP abuse database
 - [Google Safe Browsing](https://safebrowsing.google.com/) — URL threat detection
 
----
-
-<div align="center">
-
-**Built with ❤️ for safer email communication**
-
-</div>
 
